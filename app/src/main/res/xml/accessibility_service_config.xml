@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    접근성 서비스 설정:
+    - typeWindowStateChanged: 포그라운드 앱 전환 감지
+    - canPerformGestures: dispatchGesture 사용 허용
+    - packageNames 미설정: 모든 앱의 창 전환 이벤트 수신 (YouTube 감지 필요)
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault"
+    android:canPerformGestures="true"
+    android:description="@string/accessibility_service_description"
+    android:notificationTimeout="100" />

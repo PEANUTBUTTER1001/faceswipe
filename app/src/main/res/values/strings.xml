@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">android-base-template</string>
+    <string name="app_name">faceswipe</string>
+    <string name="accessibility_service_label">faceswipe 제스처 서비스</string>
+    <string name="accessibility_service_description">고개 움직임으로 유튜브 쇼츠를 자동으로 스와이프합니다. 유튜브 앱이 활성화된 경우에만 카메라를 사용합니다.</string>
 </resources>

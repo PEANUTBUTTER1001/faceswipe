@@ -23,6 +23,18 @@ composeBom = "2026.05.01"
 # UI & Material
 material = "1.14.0"
 
+# CameraX
+camerax = "1.4.2"
+
+# ML Kit (bundled - 온디바이스, 앱에 모델 내장, 즉시 사용 가능)
+# com.google.mlkit:face-detection → bundled 최신: 16.1.7
+# com.google.android.gms:play-services-mlkit-face-detection → Play Services 버전: 17.1.0 (다른 아티팩트)
+# face-mesh-detection → 별개 라이브러리 (3D 468 랜드마크, Euler 각도 없음) - 미사용
+mlkit-face-detection = "16.1.7"
+
+# Lifecycle Service
+lifecycle-service = "2.10.0"
+
 # Testing
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -59,6 +71,18 @@ test-compose-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 test-compose-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 test-androidx-espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCore" }
 test-androidx-junit = { module = "androidx.test.ext:junit", version.ref = "junitVersion" }
+
+# CameraX
+camerax-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
+camerax-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+camerax-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+camerax-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+
+# ML Kit
+mlkit-face-detection = { module = "com.google.mlkit:face-detection", version.ref = "mlkit-face-detection" }
+
+# Lifecycle Service
+lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "lifecycle-service" }
 
 # build-logic
 android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
