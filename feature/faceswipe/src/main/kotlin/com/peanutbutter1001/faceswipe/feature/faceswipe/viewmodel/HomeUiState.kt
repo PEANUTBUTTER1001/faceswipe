@@ -10,7 +10,7 @@ sealed interface HomeUiState {
 
     data class Success(
         val isServiceRunning: Boolean,
-        val isYouTubeActive: Boolean,
+        val isTargetAppActive: Boolean,
         val hasCameraPermission: Boolean,
         val hasAccessibilityPermission: Boolean
     ) : HomeUiState

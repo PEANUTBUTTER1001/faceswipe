@@ -133,17 +133,17 @@ private fun HomeContent(
             if (state.isServiceRunning) {
                 Surface(
                     shape = MaterialTheme.shapes.medium,
-                    color = if (state.isYouTubeActive)
+                    color = if (state.isTargetAppActive)
                         MaterialTheme.colorScheme.primaryContainer
                     else
                         MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = if (state.isYouTubeActive)
-                            stringResource(R.string.youtube_detected)
+                        text = if (state.isTargetAppActive)
+                            stringResource(R.string.target_app_detected)
                         else
-                            stringResource(R.string.youtube_waiting),
+                            stringResource(R.string.target_app_waiting),
                         modifier = Modifier.padding(16.dp),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium

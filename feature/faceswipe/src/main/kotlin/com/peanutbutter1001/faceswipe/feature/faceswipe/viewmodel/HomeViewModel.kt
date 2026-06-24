@@ -31,12 +31,12 @@ class HomeViewModel @Inject constructor(
     private val permissionRefreshTrigger = MutableStateFlow(0)
 
     val uiState: StateFlow<HomeUiState> = combine(
-        appStateManager.isYouTubeActive,
+        appStateManager.isTargetAppActive,
         permissionRefreshTrigger
-    ) { isYouTubeActive, _ ->
+    ) { isTargetAppActive, _ ->
         HomeUiState.Success(
             isServiceRunning = serviceController.isRunning(),
-            isYouTubeActive = isYouTubeActive,
+            isTargetAppActive = isTargetAppActive,
             hasCameraPermission = permissionChecker.hasCameraPermission(),
             hasAccessibilityPermission = permissionChecker.hasAccessibilityPermission()
         ) as HomeUiState
