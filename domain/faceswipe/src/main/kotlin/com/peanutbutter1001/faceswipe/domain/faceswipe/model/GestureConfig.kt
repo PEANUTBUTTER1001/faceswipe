@@ -18,15 +18,15 @@ package com.peanutbutter1001.faceswipe.domain.faceswipe.model
  * @param triggerToAction 트리거 → 실행 동작 매핑
  */
 data class GestureConfig(
-    val triggerThreshold: Float = 20f,
-    val neutralThreshold: Float = 8f,
-    val cooldownMs: Long = 1500L,
+    val triggerThreshold: Float = 15f,
+    val neutralThreshold: Float = 7f,
+    val cooldownMs: Long = 800L,
     val winkClosedThreshold: Float = 0.4f,
     val winkOpenThreshold: Float = 0.5f,
-    val winkMinHoldMs: Long = 150L,
-    val mouthOpenThreshold: Float = 0.08f,
-    val mouthClosedThreshold: Float = 0.03f,
-    val mouthMinHoldMs: Long = 200L,
+    val winkMinHoldMs: Long = 100L,
+    val mouthOpenThreshold: Float = 0.04f,
+    val mouthClosedThreshold: Float = 0.04f,
+    val mouthMinHoldMs: Long = 100L,
     val triggerToAction: Map<GestureTrigger, GestureAction> = mapOf(
         GestureTrigger.SwipeUp to GestureAction.SwipeVertical(directionUp = true),
         GestureTrigger.SwipeDown to GestureAction.SwipeVertical(directionUp = false),
