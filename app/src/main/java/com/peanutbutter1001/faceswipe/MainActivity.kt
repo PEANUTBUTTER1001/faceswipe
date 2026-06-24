@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.peanutbutter1001.faceswipe.presentation.ui.HomeScreen
-import com.peanutbutter1001.faceswipe.presentation.ui.theme.FaceswipeTheme
+import com.peanutbutter1001.faceswipe.core.ui.theme.FaceswipeTheme
+import com.peanutbutter1001.faceswipe.navigation.FaceSwipeNavHost
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FaceswipeTheme {
-                HomeScreen()
+                FaceSwipeNavHost()
             }
         }
     }

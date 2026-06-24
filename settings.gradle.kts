@@ -25,3 +25,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "faceswipe"
 include(":app")
+include(":domain:faceswipe")
+include(":data:faceswipe")
+include(":feature:faceswipe")
+include(":core:ui")
