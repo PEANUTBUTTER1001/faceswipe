@@ -6,5 +6,8 @@ import com.peanutbutter1001.faceswipe.domain.faceswipe.model.FaceData
 fun FaceDataEntity.toDomain(): FaceData = FaceData(
     eulerX = eulerX,
     eulerY = eulerY,
-    eulerZ = eulerZ
+    eulerZ = eulerZ,
+    leftEyeOpenProbability = leftEyeOpenProbability,
+    rightEyeOpenProbability = rightEyeOpenProbability,
+    mouthOpenRatio = mouthOpenRatio
 )

@@ -16,7 +16,14 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
-private const val YOUTUBE_PACKAGE = "com.google.android.youtube"
+/**
+ * 제스처 감지 대상 앱 패키지 목록.
+ * 새 앱 지원 시 여기에 패키지명만 추가하면 됨.
+ */
+private val TARGET_PACKAGES = setOf(
+    "com.google.android.youtube",
+    "kr.co.millie.millieshelf"
+)
 
 /**
  * TYPE_WINDOW_STATE_CHANGED 이벤트를 발생시키지만 실제 앱 전환이 아닌
@@ -40,7 +47,7 @@ private val SYSTEM_OVERLAY_PACKAGES = setOf(
  * 두 가지 역할을 담당하는 접근성 서비스:
  *
  * 1. [배터리 방어] onAccessibilityEvent를 통해 포그라운드 앱 실시간 감시.
- *    YouTube가 아닌 앱으로 전환 시 즉시 카메라 Pause.
+ *    대상 앱이 아닌 앱으로 전환 시 즉시 카메라 Pause.
  *
  * 2. [제스처 발생] AppStateManager.gestureAction을 구독하여
  *    GestureDispatcher를 통해 dispatchGesture 호출.
@@ -69,7 +76,7 @@ class GestureAccessibilityService : AccessibilityService() {
         if (packageName == lastForegroundPackage) return
 
         lastForegroundPackage = packageName
-        appStateManager.setYouTubeActive(packageName == YOUTUBE_PACKAGE)
+        appStateManager.setTargetAppActive(packageName in TARGET_PACKAGES)
     }
 
     /**
@@ -101,12 +108,12 @@ class GestureAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        appStateManager.setYouTubeActive(false)
+        appStateManager.setTargetAppActive(false)
     }
 
     override fun onDestroy() {
         serviceScope.cancel()
-        appStateManager.setYouTubeActive(false)
+        appStateManager.setTargetAppActive(false)
         super.onDestroy()
     }
 }

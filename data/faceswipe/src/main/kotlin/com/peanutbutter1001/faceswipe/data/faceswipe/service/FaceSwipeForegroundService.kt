@@ -18,7 +18,7 @@ import javax.inject.Inject
  * 카메라 라이프사이클 유지 담당 포그라운드 서비스.
  *
  * LifecycleService를 상속하여 CameraX ProcessCameraProvider에 LifecycleOwner로 등록됨.
- * AppStateManager.isYouTubeActive를 구독하여:
+ * AppStateManager.isTargetAppActive를 구독하여:
  *  - true  -> CameraX + ML Kit 파이프라인 Resume
  *  - false -> 파이프라인 Pause (배터리 방어 핵심 로직)
  */
@@ -54,8 +54,8 @@ class FaceSwipeForegroundService : LifecycleService() {
         lifecycleAwareTracker.bind(this, this)
 
         // [핵심 배터리 방어 로직]
-        // YouTube가 포그라운드일 때만 카메라 활성화
-        appStateManager.isYouTubeActive
+        // 대상 앱(유튜브, 밀리의서재 등)이 포그라운드일 때만 카메라 활성화
+        appStateManager.isTargetAppActive
             .onEach { isActive ->
                 if (isActive) repository.startTracking()
                 else repository.stopTracking()
@@ -71,7 +71,7 @@ class FaceSwipeForegroundService : LifecycleService() {
     private fun stopFaceSwipe() {
         repository.stopTracking()
         lifecycleAwareTracker.release()
-        appStateManager.setYouTubeActive(false)
+        appStateManager.setTargetAppActive(false)
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
@@ -92,7 +92,7 @@ class FaceSwipeForegroundService : LifecycleService() {
     private fun buildNotification() = NotificationCompat.Builder(this, CHANNEL_ID)
         .setSmallIcon(android.R.drawable.ic_menu_camera)
         .setContentTitle("faceswipe 활성화")
-        .setContentText("유튜브 실행 시 자동으로 제스처가 작동합니다")
+        .setContentText("대상 앱 실행 시 자동으로 제스처가 작동합니다")
         .setOngoing(true)
         .setSilent(true)
         .setContentIntent(

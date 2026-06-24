@@ -12,4 +12,10 @@ sealed interface GestureTrigger {
 
     /** 왼쪽 회전 감지 → 이전 쇼츠 */
     data object SwipeDown : GestureTrigger
+
+    /** 한쪽 눈 윙크 감지 → 위로 스와이프 */
+    data object Wink : GestureTrigger
+
+    /** 입 벌렸다 다물기 감지 → 하단 탭 */
+    data object MouthOpen : GestureTrigger
 }

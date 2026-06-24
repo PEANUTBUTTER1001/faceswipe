@@ -45,10 +45,14 @@ class GestureDispatcher @Inject constructor() {
             .build()
     }
 
+    /**
+     * 하단 1/4 영역 가운데 포인트 탭.
+     * Y 좌표 = 화면 높이 * 0.875 (하단 1/4 영역의 중앙점: 0.75 + 0.25/2)
+     */
     private fun buildTap(metrics: DisplayMetrics): GestureDescription {
         val centerX = metrics.widthPixels / 2f
-        val centerY = metrics.heightPixels / 2f
-        val path = Path().apply { moveTo(centerX, centerY) }
+        val bottomQuarterCenterY = metrics.heightPixels * 0.875f
+        val path = Path().apply { moveTo(centerX, bottomQuarterCenterY) }
         return GestureDescription.Builder()
             .addStroke(GestureDescription.StrokeDescription(path, 0L, 50L))
             .build()
