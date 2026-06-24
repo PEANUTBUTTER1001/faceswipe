@@ -20,6 +20,9 @@ splashscreen = "1.2.0"
 activityCompose = "1.13.0"
 composeBom = "2026.05.01"
 
+# Navigation
+navigationCompose = "2.9.0"
+
 # UI & Material
 material = "1.14.0"
 
@@ -27,13 +30,19 @@ material = "1.14.0"
 camerax = "1.4.2"
 
 # ML Kit (bundled - 온디바이스, 앱에 모델 내장, 즉시 사용 가능)
-# com.google.mlkit:face-detection → bundled 최신: 16.1.7
-# com.google.android.gms:play-services-mlkit-face-detection → Play Services 버전: 17.1.0 (다른 아티팩트)
-# face-mesh-detection → 별개 라이브러리 (3D 468 랜드마크, Euler 각도 없음) - 미사용
 mlkit-face-detection = "16.1.7"
 
 # Lifecycle Service
 lifecycle-service = "2.10.0"
+
+# javax.inject (순수 Kotlin 모듈용 DI 어노테이션)
+javaxInject = "1"
+
+# Coroutines
+coroutines = "1.10.2"
+
+# Serialization
+kotlinxSerialization = "1.7.3"
 
 # Testing
 junit = "4.13.2"
@@ -45,6 +54,8 @@ espressoCore = "3.7.0"
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 
 # Hilt
@@ -61,6 +72,9 @@ androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+
+# Navigation
+navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 
 # Material
 material = { module = "com.google.android.material:material", version.ref = "material" }
@@ -83,6 +97,15 @@ mlkit-face-detection = { module = "com.google.mlkit:face-detection", version.ref
 
 # Lifecycle Service
 lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "lifecycle-service" }
+
+# javax.inject
+javax-inject = { module = "javax.inject:javax.inject", version.ref = "javaxInject" }
+
+# Coroutines
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+
+# Serialization
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
 # build-logic
 android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -132,3 +155,4 @@ hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

@@ -32,5 +32,10 @@ gradlePlugin {
             id = "my.android.hilt"
             implementationClass = "AndroidHiltConventionPlugin"
         }
+
+        register("kotlinLibrary") {
+            id = "my.kotlin.library"
+            implementationClass = "KotlinLibraryConventionPlugin"
+        }
     }
 }

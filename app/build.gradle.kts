@@ -21,27 +21,21 @@ android {
 }
 
 dependencies {
+    // Modules
+    implementation(project(":feature:faceswipe"))
+    implementation(project(":data:faceswipe"))
+    implementation(project(":domain:faceswipe"))
+    implementation(project(":core:ui"))
+
     // Android Core & Lifecycle
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.core.splashscreen)
 
-    // Compose
+    // Navigation (app-level NavHost)
+    implementation(libs.navigation.compose)
+
+    // Compose (for setContent)
     implementation(libs.bundles.compose.core)
     debugImplementation(libs.bundles.compose.debug)
-
-    // Hilt Navigation Compose
-    implementation(libs.hilt.navigation.compose)
-
-    // CameraX
-    implementation(libs.camerax.core)
-    implementation(libs.camerax.camera2)
-    implementation(libs.camerax.lifecycle)
-    implementation(libs.camerax.view)
-
-    // ML Kit Face Detection (on-device)
-    implementation(libs.mlkit.face.detection)
-
-    // Lifecycle Service (LifecycleService for ForegroundService)
-    implementation(libs.lifecycle.service)
 }
