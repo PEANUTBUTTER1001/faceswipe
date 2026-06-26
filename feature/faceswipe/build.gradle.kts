@@ -14,13 +14,6 @@ dependencies {
     implementation(project(":data:faceswipe"))
     implementation(project(":core:ui"))
 
-    // Compose
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-    debugImplementation(libs.androidx.compose.ui.tooling)
-
     // Activity Compose
     implementation(libs.androidx.activity.compose)
 
@@ -29,6 +22,9 @@ dependencies {
 
     // Hilt Navigation Compose
     implementation(libs.hilt.navigation.compose)
+
+    // Hilt ViewModel Compose (hiltViewModel() 신규 패키지)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
 
     // Lifecycle
     implementation(libs.androidx.lifecycle.runtime.ktx)

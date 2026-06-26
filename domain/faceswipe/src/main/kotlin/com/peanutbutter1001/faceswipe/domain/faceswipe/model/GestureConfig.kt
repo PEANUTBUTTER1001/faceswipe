@@ -3,8 +3,11 @@ package com.peanutbutter1001.faceswipe.domain.faceswipe.model
 /**
  * 제스처 감지 설정을 외부화한 데이터 클래스.
  *
- * 임계값, 쿨타임, 트리거→액션 매핑을 런타임에 변경할 수 있도록 분리.
- * 추후 DataStore/Room 기반 사용자 설정과 연동 가능.
+ * 감지 임계값과 쿨타임 등을 런타임에 변경할 수 있도록 분리.
+ *
+ * 주의: 트리거 → 액션 매핑은 더 이상 여기서 관리하지 않는다.
+ * 앱별 매핑은 GestureMappingRepository(DataStore)에서 관리하며,
+ * 사용자가 설정 화면에서 변경한다.
  *
  * @param triggerThreshold 좌우 회전 트리거 임계값 (도)
  * @param neutralThreshold 중립 복귀 판단 기준 (도)
@@ -15,7 +18,6 @@ package com.peanutbutter1001.faceswipe.domain.faceswipe.model
  * @param mouthOpenThreshold 입 벌림 판단 임계값 (mouthOpenRatio가 이 값 이상이면 벌린 것으로 판단)
  * @param mouthClosedThreshold 입 다물기 판단 임계값 (mouthOpenRatio가 이 값 이하이면 다문 것으로 판단)
  * @param mouthMinHoldMs 입 벌림 최소 유지 시간 (ms). 말하기/하품과 구분
- * @param triggerToAction 트리거 → 실행 동작 매핑
  */
 data class GestureConfig(
     val triggerThreshold: Float = 15f,
@@ -27,10 +29,4 @@ data class GestureConfig(
     val mouthOpenThreshold: Float = 0.04f,
     val mouthClosedThreshold: Float = 0.04f,
     val mouthMinHoldMs: Long = 100L,
-    val triggerToAction: Map<GestureTrigger, GestureAction> = mapOf(
-        GestureTrigger.SwipeUp to GestureAction.SwipeVertical(directionUp = true),
-        GestureTrigger.SwipeDown to GestureAction.SwipeVertical(directionUp = false),
-        GestureTrigger.Wink to GestureAction.SwipeVertical(directionUp = true),
-        GestureTrigger.MouthOpen to GestureAction.Tap
-    )
 )

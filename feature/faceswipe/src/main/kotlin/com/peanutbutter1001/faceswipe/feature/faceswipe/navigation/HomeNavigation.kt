@@ -11,9 +11,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object HomeRoute
 
-fun NavGraphBuilder.homeScreen() {
+fun NavGraphBuilder.homeScreen(
+    onSettingsClick: () -> Unit,
+) {
     composable<HomeRoute> {
-        HomeRoute()
+        HomeRoute(
+            onSettingsClick = onSettingsClick,
+        )
     }
 }
 

@@ -1,21 +1,30 @@
 package com.peanutbutter1001.faceswipe.domain.faceswipe.model
 
 /**
- * 얼굴 제스처 감지 결과를 나타내는 sealed interface.
+ * 감지 가능한 제스처 트리거.
  *
- * 각 구현체는 특정 얼굴 움직임 패턴에 대응한다.
- * 새로운 제스처 타입은 여기에 추가하고, GestureDetector 구현체를 만들면 된다.
+ * 각 detector가 얼굴 데이터를 분석해 해당 트리거를 emit하며,
+ * 트리거 → 액션 매핑은 앱별로 GestureMappingRepository(DataStore)에서 관리한다.
  */
 sealed interface GestureTrigger {
-    /** 오른쪽 회전 감지 → 다음 쇼츠 */
-    data object SwipeUp : GestureTrigger
+    /** 고개 왼쪽 회전 */
+    data object HeadLeft : GestureTrigger
 
-    /** 왼쪽 회전 감지 → 이전 쇼츠 */
-    data object SwipeDown : GestureTrigger
+    /** 고개 오른쪽 회전 */
+    data object HeadRight : GestureTrigger
 
-    /** 한쪽 눈 윙크 감지 → 위로 스와이프 */
-    data object Wink : GestureTrigger
+    /** 왼쪽 눈 윙크 */
+    data object WinkLeft : GestureTrigger
 
-    /** 입 벌렸다 다물기 감지 → 하단 탭 */
+    /** 오른쪽 눈 윙크 */
+    data object WinkRight : GestureTrigger
+
+    /** 입 벌렸다 다물기 */
     data object MouthOpen : GestureTrigger
+
+    companion object {
+        /** 설정 화면에 노출되는 제스처 목록 */
+        val settingsEntries: List<GestureTrigger> =
+            listOf(HeadLeft, HeadRight, WinkLeft, WinkRight, MouthOpen)
+    }
 }

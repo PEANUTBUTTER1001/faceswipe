@@ -6,6 +6,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.peanutbutter1001.faceswipe.feature.faceswipe.navigation.HomeRoute
 import com.peanutbutter1001.faceswipe.feature.faceswipe.navigation.homeScreen
+import com.peanutbutter1001.faceswipe.feature.faceswipe.navigation.navigateToSettings
+import com.peanutbutter1001.faceswipe.feature.faceswipe.navigation.settingsScreen
 
 @Composable
 fun FaceSwipeNavHost(modifier: Modifier = Modifier) {
@@ -13,8 +15,13 @@ fun FaceSwipeNavHost(modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
         startDestination = HomeRoute,
-        modifier = modifier
+        modifier = modifier,
     ) {
-        homeScreen()
+        homeScreen(
+            onSettingsClick = { navController.navigateToSettings() },
+        )
+        settingsScreen(
+            onBackClick = { navController.popBackStack() },
+        )
     }
 }

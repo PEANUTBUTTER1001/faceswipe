@@ -17,17 +17,8 @@ import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 /**
- * 제스처 감지 대상 앱 패키지 목록.
- * 새 앱 지원 시 여기에 패키지명만 추가하면 됨.
- */
-private val TARGET_PACKAGES = setOf(
-    "com.google.android.youtube",
-    "kr.co.millie.millieshelf"
-)
-
-/**
  * TYPE_WINDOW_STATE_CHANGED 이벤트를 발생시키지만 실제 앱 전환이 아닌
- * 시스템 UI 패키지 목록. 이 패키지에서 온 이벤트는 무시해야 깜빡임이 없음.
+ * 시스템 UI 패키지 목록.
  */
 private val SYSTEM_OVERLAY_PACKAGES = setOf(
     "android",
@@ -44,13 +35,12 @@ private val SYSTEM_OVERLAY_PACKAGES = setOf(
 )
 
 /**
- * 두 가지 역할을 담당하는 접근성 서비스:
+ * 두 가지 역할의 접근성 서비스:
+ * 1. [배터리 방어] 포그라운드 앱 실시간 감시 -> 대상 앱 외 전환 시 카메라 Pause.
+ * 2. [제스처 발생] gestureAction 구독 -> GestureDispatcher로 dispatchGesture.
  *
- * 1. [배터리 방어] onAccessibilityEvent를 통해 포그라운드 앱 실시간 감시.
- *    대상 앱이 아닌 앱으로 전환 시 즉시 카메라 Pause.
- *
- * 2. [제스처 발생] AppStateManager.gestureAction을 구독하여
- *    GestureDispatcher를 통해 dispatchGesture 호출.
+ * 또한 포그라운드 서비스 (재)시작 시 resyncRequest를 받아 rootInActiveWindow로
+ * 현재 포그라운드 앱을 강제로 다시 읽어 상태를 재동기화한다.
  */
 @AndroidEntryPoint
 class GestureAccessibilityService : AccessibilityService() {
@@ -65,6 +55,8 @@ class GestureAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         observeGestureActions()
+        observeResyncRequests()
+        mainHandler.post { syncCurrentForegroundApp() }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
@@ -76,26 +68,37 @@ class GestureAccessibilityService : AccessibilityService() {
         if (packageName == lastForegroundPackage) return
 
         lastForegroundPackage = packageName
-        appStateManager.setTargetAppActive(packageName in TARGET_PACKAGES)
+        appStateManager.updateForegroundApp(packageName)
     }
 
-    /**
-     * 제스처 액션 구독 -> GestureDispatcher를 통해 dispatchGesture 호출.
-     * when 하드코딩 제거, GestureDispatcher에 위임.
-     */
     private fun observeGestureActions() {
         appStateManager.gestureAction
             .onEach { action ->
-                // Toast (디버그용)
                 val toastMsg = buildToastMessage(action)
                 mainHandler.post {
                     Toast.makeText(this, toastMsg, Toast.LENGTH_SHORT).show()
                 }
-
                 val gesture = gestureDispatcher.buildGesture(action, resources.displayMetrics)
                 gesture?.let { dispatchGesture(it, null, null) }
             }
             .launchIn(serviceScope)
+    }
+
+    private fun observeResyncRequests() {
+        appStateManager.resyncRequest
+            .onEach { mainHandler.post { syncCurrentForegroundApp() } }
+            .launchIn(serviceScope)
+    }
+
+    /**
+     * rootInActiveWindow로 현재 포그라운드 창의 패키지명을 읽어 상태 강제 갱신.
+     * (accessibility_service_config.xml의 canRetrieveWindowContent="true" 필요)
+     */
+    private fun syncCurrentForegroundApp() {
+        val pkg = rootInActiveWindow?.packageName?.toString()
+        if (pkg == null || pkg in SYSTEM_OVERLAY_PACKAGES) return
+        lastForegroundPackage = pkg
+        appStateManager.updateForegroundApp(pkg)
     }
 
     private fun buildToastMessage(action: GestureAction): String = when (action) {

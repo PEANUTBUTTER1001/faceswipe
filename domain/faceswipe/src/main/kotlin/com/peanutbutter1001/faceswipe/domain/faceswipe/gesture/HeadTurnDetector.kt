@@ -9,11 +9,9 @@ import kotlin.math.abs
 /**
  * eulerY(좌우 회전각) 기반 고개 돌림 감지기.
  *
- * 기존 AnalyzeFaceMovementUseCase의 감지 로직을 그대로 추출한 것이다.
- *
  * 알고리즘:
- *  1. eulerY > +triggerThreshold → 오른쪽 회전 → SwipeUp (다음 쇼츠)
- *  2. eulerY < -triggerThreshold → 왼쪽 회전 → SwipeDown (이전 쇼츠)
+ *  1. eulerY > +triggerThreshold → 오른쪽 회전 → HeadRight
+ *  2. eulerY < -triggerThreshold → 왼쪽 회전 → HeadLeft
  *  3. 트리거 후 중립 구간(|eulerY| < neutralThreshold)으로 돌아와야 다음 제스처 가능
  *  4. 쿨타임(cooldownMs) 동안 추가 트리거 무시
  */
@@ -38,12 +36,12 @@ class HeadTurnDetector @Inject constructor(
             eulerY > config.triggerThreshold -> {
                 isTriggered = true
                 lastTriggerTime = timestampMs
-                GestureTrigger.SwipeUp
+                GestureTrigger.HeadRight
             }
             eulerY < -config.triggerThreshold -> {
                 isTriggered = true
                 lastTriggerTime = timestampMs
-                GestureTrigger.SwipeDown
+                GestureTrigger.HeadLeft
             }
             else -> null
         }

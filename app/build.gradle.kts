@@ -35,7 +35,6 @@ dependencies {
     // Navigation (app-level NavHost)
     implementation(libs.navigation.compose)
 
-    // Compose (for setContent)
-    implementation(libs.bundles.compose.core)
-    debugImplementation(libs.bundles.compose.debug)
+    // Compose (setContent에 필요한 activity-compose만 선언, 나머지는 convention plugin 제공)
+    implementation(libs.androidx.activity.compose)
 }
