@@ -12,7 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -26,8 +26,9 @@ import com.peanutbutter1001.faceswipe.feature.faceswipe.viewmodel.HomeViewModel
  */
 @Composable
 fun HomeRoute(
+    onSettingsClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -63,6 +64,7 @@ fun HomeRoute(
         onOpenAccessibilitySettings = {
             context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         },
-        modifier = modifier
+        onSettingsClick = onSettingsClick,
+        modifier = modifier,
     )
 }

@@ -22,6 +22,9 @@ dependencies {
     // Lifecycle Service (LifecycleService for ForegroundService)
     implementation(libs.lifecycle.service)
 
+    // DataStore (앱별 제스처 매핑 설정 영속화)
+    implementation(libs.androidx.datastore.preferences)
+
     // AndroidX Core
     implementation(libs.androidx.core.ktx)
 }

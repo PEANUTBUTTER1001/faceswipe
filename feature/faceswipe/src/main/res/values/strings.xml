@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 기존 문자열 -->
     <string name="app_title">faceswipe</string>
-    <string name="app_subtitle">고개 움직임으로 콘텐츠를 스와이프하세요</string>
+    <string name="app_subtitle">얼굴 움직임으로 콘텐츠를 조작하세요</string>
     <string name="camera_permission_title">카메라 권한</string>
     <string name="camera_permission_desc">앱 실행 시 자동 요청됩니다</string>
     <string name="permission_granted">허용됨</string>
@@ -9,9 +10,33 @@
     <string name="accessibility_service_title">접근성 서비스</string>
     <string name="accessibility_permission_desc">설정에서 faceswipe을 활성화하세요</string>
     <string name="open_settings">설정 열기</string>
+    <string name="open_permission_settings">권한 설정 열기</string>
     <string name="target_app_detected">▶  대상 앱 감지됨 — 얼굴 인식 활성화 중</string>
     <string name="target_app_waiting">⏸  대상 앱 대기 중 — 카메라 절전 모드</string>
     <string name="start_service">faceswipe 시작</string>
     <string name="stop_service">faceswipe 중지</string>
     <string name="permissions_required">위 권한을 모두 허용해야 시작할 수 있습니다</string>
+
+    <!-- 설정 화면 -->
+    <string name="settings_title">제스처 설정</string>
+    <string name="settings_back">뒤로가기</string>
+    <string name="settings_reset">초기화</string>
+    <string name="settings_sheet_title">%s — 액션 선택</string>
+
+    <!-- 대상 앱 -->
+    <string name="app_youtube">유튜브</string>
+    <string name="app_millie">밀리의 서재</string>
+
+    <!-- 제스처 트리거 -->
+    <string name="trigger_head_left">고개 왼쪽 돌리기</string>
+    <string name="trigger_head_right">고개 오른쪽 돌리기</string>
+    <string name="trigger_wink_left">왼쪽 윙크</string>
+    <string name="trigger_wink_right">오른쪽 윙크</string>
+    <string name="trigger_mouth_open">입 벌리기</string>
+
+    <!-- 액션 -->
+    <string name="action_swipe_up">위로 스와이프</string>
+    <string name="action_swipe_down">아래로 스와이프</string>
+    <string name="action_tap_bottom_quarter">하단 1/4 영역 터치</string>
+    <string name="action_none">(선택 안 함)</string>
 </resources>

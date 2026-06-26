@@ -17,8 +17,9 @@ import javax.inject.Inject
 /**
  * HomeScreen을 위한 ViewModel.
  *
- * Context 직접 사용을 제거하고, PermissionChecker / ServiceController를 통해
- * 간접 접근한다. 테스트 시 이들을 Mock으로 대체 가능.
+ * 서비스 실행 상태는 AppStateManager.isServiceRunning(StateFlow)을 직접 관찰하여
+ * 실제 서비스 상태와 UI 버튼 상태가 항상 일치하도록 한다.
+ * -> 모든 앱 종료 후 재실행 시에도 실제로 멈춰 있으면 시작 버튼이 초기 상태로 표시됨.
  */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -32,10 +33,11 @@ class HomeViewModel @Inject constructor(
 
     val uiState: StateFlow<HomeUiState> = combine(
         appStateManager.isTargetAppActive,
+        appStateManager.isServiceRunning,
         permissionRefreshTrigger
-    ) { isTargetAppActive, _ ->
+    ) { isTargetAppActive, isServiceRunning, _ ->
         HomeUiState.Success(
-            isServiceRunning = serviceController.isRunning(),
+            isServiceRunning = isServiceRunning,
             isTargetAppActive = isTargetAppActive,
             hasCameraPermission = permissionChecker.hasCameraPermission(),
             hasAccessibilityPermission = permissionChecker.hasAccessibilityPermission()
@@ -49,7 +51,6 @@ class HomeViewModel @Inject constructor(
         )
 
     fun onCameraPermissionResult(granted: Boolean) {
-        // 권한 결과를 받으면 전체 상태 갱신
         permissionRefreshTrigger.value++
     }
 

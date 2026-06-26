@@ -24,10 +24,32 @@ class AndroidComposeConventionPlugin : Plugin<Project> {
             val libs = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
 
             dependencies {
+                // Compose BOM
                 libs.findLibrary("androidx-compose-bom").ifPresent { bom ->
                     add("implementation", platform(bom))
                 }
+
+                // Compose 핵심 라이브러리
+                libs.findLibrary("androidx-compose-ui").ifPresent {
+                    add("implementation", it)
+                }
+                libs.findLibrary("androidx-compose-ui-graphics").ifPresent {
+                    add("implementation", it)
+                }
+                libs.findLibrary("androidx-compose-ui-tooling-preview").ifPresent {
+                    add("implementation", it)
+                }
+                libs.findLibrary("androidx-compose-material3").ifPresent {
+                    add("implementation", it)
+                }
+                libs.findLibrary("androidx-compose-material-icons-extended").ifPresent {
+                    add("implementation", it)
+                }
+                libs.findLibrary("androidx-compose-ui-tooling").ifPresent {
+                    add("debugImplementation", it)
+                }
             }
+
             pluginManager.withPlugin("com.android.application") {
                 dependencies {
                     libs.findLibrary("androidx-compose-bom").ifPresent { bom ->
