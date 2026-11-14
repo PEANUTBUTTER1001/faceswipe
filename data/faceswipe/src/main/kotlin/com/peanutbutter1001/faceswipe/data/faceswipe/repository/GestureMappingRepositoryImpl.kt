@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.peanutbutter1001.faceswipe.domain.faceswipe.model.DefaultGestureMappings
 import com.peanutbutter1001.faceswipe.domain.faceswipe.model.GestureAction
 import com.peanutbutter1001.faceswipe.domain.faceswipe.model.GestureTrigger
 import com.peanutbutter1001.faceswipe.domain.faceswipe.model.TargetApp
@@ -40,7 +41,12 @@ class GestureMappingRepositoryImpl @Inject constructor(
             GestureTrigger.settingsEntries.associateWith { trigger ->
                 val key = buildPreferencesKey(targetApp, trigger)
                 val storedValue = preferences[key]
-                storedValue?.toGestureAction()
+                // 키가 없으면(한 번도 설정하지 않음) 기본값, "none"이면 사용자가 해제한 것 → null
+                if (storedValue == null) {
+                    DefaultGestureMappings.forTrigger(trigger)
+                } else {
+                    storedValue.toGestureAction()
+                }
             }
         }
     }
@@ -65,6 +71,18 @@ class GestureMappingRepositoryImpl @Inject constructor(
         }
     }
 
+    /** 한 번의 edit 트랜잭션으로 일괄 저장 → Flow가 중간 상태를 emit하지 않는다. */
+    override suspend fun setMappings(
+        targetApp: TargetApp,
+        mappings: Map<GestureTrigger, GestureAction?>,
+    ) {
+        context.gestureMappingDataStore.edit { preferences ->
+            mappings.forEach { (trigger, action) ->
+                preferences[buildPreferencesKey(targetApp, trigger)] = action.toStorageKey()
+            }
+        }
+    }
+
     // -- 직렬화 헬퍼 --
 
     /**
@@ -84,8 +102,6 @@ class GestureMappingRepositoryImpl @Inject constructor(
         // -- Trigger 직렬화 키 --
         private const val TRIGGER_HEAD_LEFT = "head_left"
         private const val TRIGGER_HEAD_RIGHT = "head_right"
-        private const val TRIGGER_WINK_LEFT = "wink_left"
-        private const val TRIGGER_WINK_RIGHT = "wink_right"
         private const val TRIGGER_MOUTH_OPEN = "mouth_open"
 
         // -- Action 직렬화 키 --
@@ -97,8 +113,6 @@ class GestureMappingRepositoryImpl @Inject constructor(
         private fun GestureTrigger.toStorageKey(): String = when (this) {
             GestureTrigger.HeadLeft -> TRIGGER_HEAD_LEFT
             GestureTrigger.HeadRight -> TRIGGER_HEAD_RIGHT
-            GestureTrigger.WinkLeft -> TRIGGER_WINK_LEFT
-            GestureTrigger.WinkRight -> TRIGGER_WINK_RIGHT
             GestureTrigger.MouthOpen -> TRIGGER_MOUTH_OPEN
             // deprecated 항목은 설정 화면에서 사용하지 않으므로 fallback 처리
             else -> "unknown"

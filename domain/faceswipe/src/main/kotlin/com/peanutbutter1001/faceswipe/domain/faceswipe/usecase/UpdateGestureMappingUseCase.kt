@@ -33,4 +33,11 @@ class UpdateGestureMappingUseCase @Inject constructor(
     suspend fun reset(targetApp: TargetApp) {
         repository.resetMappings(targetApp)
     }
+
+    /**
+     * 해제 직전 매핑을 일괄 복원한다 (실행 취소).
+     */
+    suspend fun restore(targetApp: TargetApp, mappings: Map<GestureTrigger, GestureAction?>) {
+        repository.setMappings(targetApp, mappings)
+    }
 }

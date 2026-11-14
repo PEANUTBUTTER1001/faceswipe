@@ -21,7 +21,9 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
                 buildTypes {
                     getByName("release") {
-                        isMinifyEnabled = false
+                        // R8 코드 축소·난독화 + 미사용 리소스 제거 (출시 빌드 크기·보호)
+                        isMinifyEnabled = true
+                        isShrinkResources = true
                         proguardFiles(
                             getDefaultProguardFile("proguard-android-optimize.txt"),
                             "proguard-rules.pro"

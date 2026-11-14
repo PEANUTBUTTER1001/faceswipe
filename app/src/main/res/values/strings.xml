@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">faceswipe</string>
     <string name="accessibility_service_label">faceswipe 제스처 서비스</string>
-    <string name="accessibility_service_description">고개 움직임으로 유튜브 쇼츠를 자동으로 스와이프합니다. 유튜브 앱이 활성화된 경우에만 카메라를 사용합니다.</string>
+    <!-- 시스템 접근성 설정에 표시. 실제 동작과 일치해야 한다 (Play 접근성 API 정책) -->
+    <string name="accessibility_service_description">얼굴 제스처로 유튜브와 밀리의 서재를 넘겨요. 손 사용이 불편한 분을 위해 고개 돌리기와 입 벌리기를 스와이프나 탭으로 바꿔 실행해요. 대상 앱이 열려 있을 때만 카메라를 켜고, 화면 속 글자나 입력 내용은 읽지 않아요.</string>
 </resources>

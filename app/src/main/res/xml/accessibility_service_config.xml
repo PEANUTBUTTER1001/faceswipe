@@ -6,12 +6,17 @@
     - canRetrieveWindowContent: rootInActiveWindow로 현재 포그라운드 앱 직접 조회(재동기화)에 필수
     - flagRetrieveInteractiveWindows: 활성 창 정보 신뢰성 향상
     - packageNames 미설정: 모든 앱의 창 전환 이벤트 수신 (YouTube/밀리 감지 필요)
+    - isAccessibilityTool: 장애가 있는 사용자를 돕는 앱임을 선언 (Play 접근성 도구 신청 전제).
+      AccessibilityServiceInfo.isAccessibilityTool()은 API 31에 추가되어, 그 미만 기기에서는 무시된다.
 -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:accessibilityEventTypes="typeWindowStateChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows"
     android:canPerformGestures="true"
     android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_service_description"
-    android:notificationTimeout="100" />
+    android:isAccessibilityTool="true"
+    android:notificationTimeout="100"
+    tools:targetApi="31" />

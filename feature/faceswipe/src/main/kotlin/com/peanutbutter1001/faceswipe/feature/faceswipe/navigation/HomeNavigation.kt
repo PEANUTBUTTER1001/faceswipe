@@ -13,10 +13,14 @@ data object HomeRoute
 
 fun NavGraphBuilder.homeScreen(
     onSettingsClick: () -> Unit,
+    onHowToClick: () -> Unit,
+    onOpenSetup: (focusNotification: Boolean) -> Unit,
 ) {
     composable<HomeRoute> {
         HomeRoute(
             onSettingsClick = onSettingsClick,
+            onHowToClick = onHowToClick,
+            onOpenSetup = onOpenSetup,
         )
     }
 }

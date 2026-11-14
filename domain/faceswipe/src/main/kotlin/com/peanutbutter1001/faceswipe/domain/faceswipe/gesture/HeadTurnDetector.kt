@@ -46,4 +46,9 @@ class HeadTurnDetector @Inject constructor(
             else -> null
         }
     }
+
+    override fun reset() {
+        isTriggered = false
+        lastTriggerTime = 0L
+    }
 }

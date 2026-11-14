@@ -70,4 +70,9 @@ class MouthOpenDetector @Inject constructor(
         mouthOpenStartTime = 0L
         holdSatisfied = false
     }
+
+    override fun reset() {
+        resetState()
+        lastTriggerTime = 0L
+    }
 }

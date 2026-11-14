@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        제스처·동작·대상 앱 레이블.
+        서비스 오버레이(data)와 화면(feature)이 함께 쓰므로 data 모듈에 둔다 (명세 Q2 = A).
+    -->
+    <string name="app_youtube">유튜브</string>
+    <string name="app_millie">밀리의 서재</string>
+
+    <string name="trigger_head_left">고개 왼쪽 돌리기</string>
+    <string name="trigger_head_right">고개 오른쪽 돌리기</string>
+    <string name="trigger_mouth_open">입 벌리기</string>
+
+    <string name="action_swipe_up">위로 스와이프</string>
+    <string name="action_swipe_down">아래로 스와이프</string>
+    <string name="action_swipe_left">왼쪽으로 스와이프</string>
+    <string name="action_swipe_right">오른쪽으로 스와이프</string>
+    <string name="action_tap_bottom_quarter">하단 1/4 영역 터치</string>
+    <string name="action_pause">일시정지</string>
+    <string name="action_none">선택 안 함</string>
+
+    <!-- 포그라운드 서비스 알림 -->
+    <string name="notification_channel_name">faceswipe 실행 상태</string>
+    <string name="notification_channel_desc">faceswipe가 켜져 있는 동안 상태와 중지 버튼을 보여 줘요</string>
+    <string name="notification_title">faceswipe 실행 중</string>
+    <string name="notification_text_active">%s에서 얼굴 제스처를 인식하고 있어요</string>
+    <string name="notification_text_waiting">대상 앱을 열면 얼굴 인식을 시작해요</string>
+    <string name="notification_text_camera_unavailable">카메라를 쓸 수 없어요. 다른 앱이 카메라를 쓰고 있는지 확인해 주세요</string>
+    <string name="notification_action_stop">중지</string>
+
+    <!-- 제스처 인식 오버레이 -->
+    <string name="overlay_mapped">%1$s → %2$s</string>
+    <string name="overlay_unmapped">%s · 연결된 동작이 없어요</string>
+
+    <!-- 빠른 설정 타일 -->
+    <string name="tile_label">faceswipe</string>
+    <string name="tile_subtitle_on">켜짐</string>
+    <string name="tile_subtitle_off">꺼짐</string>
+    <string name="tile_subtitle_setup">설정 필요</string>
+</resources>

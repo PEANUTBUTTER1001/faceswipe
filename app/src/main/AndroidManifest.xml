@@ -10,6 +10,15 @@
     <!-- 알림 권한 (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!--
+        패키지 가시성 (Android 11+): "시험해 보기"에서 대상 앱 실행 인텐트를 조회하려면 선언 필요.
+        TargetApp.packageName과 같은 값.
+    -->
+    <queries>
+        <package android:name="com.google.android.youtube" />
+        <package android:name="kr.co.millie.millieshelf" />
+    </queries>
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />

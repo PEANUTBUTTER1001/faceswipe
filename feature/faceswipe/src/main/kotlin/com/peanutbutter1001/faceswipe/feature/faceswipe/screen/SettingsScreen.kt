@@ -1,63 +1,68 @@
 package com.peanutbutter1001.faceswipe.feature.faceswipe.screen
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.peanutbutter1001.faceswipe.core.ui.component.SettingsChoiceRow
+import com.peanutbutter1001.faceswipe.core.ui.component.SettingsDescription
+import com.peanutbutter1001.faceswipe.core.ui.component.SettingsDestructiveRow
+import com.peanutbutter1001.faceswipe.core.ui.component.SettingsDimens
+import com.peanutbutter1001.faceswipe.core.ui.component.SettingsSectionHeader
 import com.peanutbutter1001.faceswipe.core.ui.theme.FaceswipeTheme
 import com.peanutbutter1001.faceswipe.domain.faceswipe.model.GestureAction
 import com.peanutbutter1001.faceswipe.domain.faceswipe.model.GestureTrigger
 import com.peanutbutter1001.faceswipe.domain.faceswipe.model.TargetApp
+import com.peanutbutter1001.faceswipe.feature.faceswipe.R
 import com.peanutbutter1001.faceswipe.feature.faceswipe.viewmodel.SettingsUiState
 import com.peanutbutter1001.faceswipe.feature.faceswipe.viewmodel.SettingsViewModel
-import com.peanutbutter1001.faceswipe.feature.faceswipe.R
 import kotlinx.coroutines.launch
 
 // ============================================================
@@ -71,13 +76,38 @@ fun SettingsRoute(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarScope = rememberCoroutineScope()
+
+    // 전체 해제 직후 "실행 취소" 스낵바. 시간 초과·닫힘이면 복원 불가로 처리한다.
+    val pendingUndoApp = (uiState as? SettingsUiState.Success)?.pendingUndoApp
+    val doneText = pendingUndoApp?.let { stringResource(R.string.settings_reset_done, stringResource(it.displayNameRes())) }
+    val undoLabel = stringResource(R.string.settings_reset_undo)
+    val undoneText = stringResource(R.string.settings_reset_undone)
+    LaunchedEffect(pendingUndoApp) {
+        if (doneText == null) return@LaunchedEffect
+        val result = snackbarHostState.showSnackbar(
+            message = doneText,
+            actionLabel = undoLabel,
+            withDismissAction = true,
+            duration = SnackbarDuration.Long,
+        )
+        if (result == SnackbarResult.ActionPerformed) {
+            viewModel.undoReset()
+            // undoReset으로 키가 바뀌어 이 Effect가 취소되므로 별도 scope에서 안내
+            snackbarScope.launch { snackbarHostState.showSnackbar(undoneText) }
+        } else {
+            viewModel.onUndoDismissed()
+        }
+    }
 
     SettingsScreen(
         uiState = uiState,
         onBackClick = onBackClick,
         onAppSelected = viewModel::selectApp,
         onActionSelected = viewModel::updateAction,
-        onResetClick = viewModel::resetCurrentApp,
+        onResetConfirmed = viewModel::resetCurrentApp,
+        snackbarHostState = snackbarHostState,
         modifier = modifier,
     )
 }
@@ -86,6 +116,13 @@ fun SettingsRoute(
 // Screen (Stateless Composable)
 // ============================================================
 
+/**
+ * 제스처 설정 상세 화면.
+ *
+ * android-settings.md 기준 구성:
+ *   안내문 → [대상 앱] 2분할 선택 → [제스처와 동작] 단일 선택 행 5개 → [초기화] 위험 행(확인 대화상자)
+ * 기존 상단 바의 즉시 초기화 아이콘은 확인 없이 데이터를 지워 제거하고, 섹션 끝 위험 행으로 옮겼다.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -93,37 +130,27 @@ fun SettingsScreen(
     onBackClick: () -> Unit,
     onAppSelected: (TargetApp) -> Unit,
     onActionSelected: (GestureTrigger, GestureAction?) -> Unit,
-    onResetClick: () -> Unit,
+    onResetConfirmed: () -> Unit,
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = {
-                    Text(text = stringResource(R.string.settings_title))
-                },
+                title = { Text(text = stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.settings_back),
+                            contentDescription = stringResource(R.string.common_back),
                         )
                     }
                 },
-                actions = {
-                    // 초기화 버튼
-                    if (uiState is SettingsUiState.Success) {
-                        IconButton(onClick = onResetClick) {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = stringResource(R.string.settings_reset),
-                            )
-                        }
-                    }
-                },
+                // 본문과 같은 배경 한 장을 쓰도록 상단 바도 background 색 사용
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.background,
                 ),
             )
         },
@@ -146,6 +173,7 @@ fun SettingsScreen(
                     mappings = uiState.mappings,
                     onAppSelected = onAppSelected,
                     onActionSelected = onActionSelected,
+                    onResetConfirmed = onResetConfirmed,
                     modifier = Modifier.padding(innerPadding),
                 )
             }
@@ -157,413 +185,236 @@ fun SettingsScreen(
 // 내부 Composable 구성 요소
 // ============================================================
 
-/**
- * 설정 화면 본문: 앱 탭 + 제스처 매핑 리스트.
- */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SettingsContent(
     selectedApp: TargetApp,
     mappings: Map<GestureTrigger, GestureAction?>,
     onAppSelected: (TargetApp) -> Unit,
     onActionSelected: (GestureTrigger, GestureAction?) -> Unit,
+    onResetConfirmed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 바텀 시트에서 편집 중인 제스처
-    var editingTrigger by remember { mutableStateOf<GestureTrigger?>(null) }
-    val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
+    // 대화상자 표시 여부는 순수 UI 상태이므로 화면 내부에 둔다. 회전 시 유지를 위해 Saveable 사용.
+    // GestureTrigger는 Saveable이 아니므로 settingsEntries의 인덱스로 저장한다.
+    var editingTriggerIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var showResetDialog by rememberSaveable { mutableStateOf(false) }
 
-    Column(modifier = modifier.fillMaxSize()) {
-        // -- 앱 선택 탭 --
-        AppTabRow(
+    val appName = stringResource(selectedApp.displayNameRes())
+    val mappedCount = mappings.values.count { it != null }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+    ) {
+        SettingsDescription(text = stringResource(R.string.settings_description))
+
+        // -- 대상 앱: 짧고 자명한 2개 선택지 → 분할 선택 컨트롤 --
+        SettingsSectionHeader(title = stringResource(R.string.settings_section_target_app))
+        TargetAppSelector(
             selectedApp = selectedApp,
             onAppSelected = onAppSelected,
+            modifier = Modifier.padding(horizontal = SettingsDimens.ScreenInset),
         )
 
-        // -- 제스처 매핑 리스트 --
-        LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            items(
-                items = GestureTrigger.settingsEntries,
-                key = { it::class.simpleName ?: "" },
-            ) { trigger ->
-                GestureCard(
-                    trigger = trigger,
-                    selectedAction = mappings[trigger],
-                    onClick = { editingTrigger = trigger },
-                )
-            }
+        // -- 제스처와 동작: 단일 선택 행, 탭하면 라디오 대화상자 --
+        SettingsSectionHeader(title = stringResource(R.string.settings_section_gestures))
+        GestureTrigger.settingsEntries.forEachIndexed { index, trigger ->
+            val action = mappings[trigger]
+            SettingsChoiceRow(
+                title = stringResource(trigger.displayNameRes()),
+                value = action.displayName(),
+                valueIsPlaceholder = action == null,
+                onClick = { editingTriggerIndex = index },
+            )
         }
+
+        // -- 초기화: 데이터 삭제 행은 관련 섹션 끝에 배치 --
+        SettingsSectionHeader(title = stringResource(R.string.settings_section_reset))
+        SettingsDestructiveRow(
+            title = stringResource(R.string.settings_reset_title, appName),
+            summary = if (mappedCount > 0) {
+                stringResource(R.string.settings_reset_summary, mappedCount)
+            } else {
+                stringResource(R.string.settings_reset_summary_empty)
+            },
+            // 해제할 연결이 없으면 실행할 의미가 없으므로 비활성
+            enabled = mappedCount > 0,
+            onClick = { showResetDialog = true },
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 
-    // -- 액션 선택 바텀 시트 --
-    editingTrigger?.let { trigger ->
-        ModalBottomSheet(
-            onDismissRequest = { editingTrigger = null },
-            sheetState = sheetState,
-        ) {
-            ActionSelectionSheet(
+    // -- 동작 선택 대화상자 --
+    editingTriggerIndex
+        ?.let { GestureTrigger.settingsEntries.getOrNull(it) }
+        ?.let { trigger ->
+            ActionChoiceDialog(
                 trigger = trigger,
                 currentAction = mappings[trigger],
                 onActionSelected = { action ->
                     onActionSelected(trigger, action)
-                    scope.launch {
-                        sheetState.hide()
-                        editingTrigger = null
-                    }
+                    editingTriggerIndex = null
                 },
+                onDismiss = { editingTriggerIndex = null },
             )
         }
+
+    // -- 초기화 확인 대화상자: 대상(앱)과 범위(개수)를 명시, 취소 시 데이터 유지 --
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            title = { Text(text = stringResource(R.string.settings_reset_dialog_title, appName)) },
+            text = { Text(text = stringResource(R.string.settings_reset_dialog_message, mappedCount)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // 대화상자를 먼저 닫아 확인 버튼 중복 탭으로 인한 재실행 방지
+                        showResetDialog = false
+                        onResetConfirmed()
+                    },
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_reset_confirm),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text(text = stringResource(R.string.common_cancel))
+                }
+            },
+        )
     }
 }
 
 /**
- * 앱 선택 탭.
+ * 대상 앱 2분할 선택 컨트롤.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppTabRow(
+private fun TargetAppSelector(
     selectedApp: TargetApp,
     onAppSelected: (TargetApp) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val apps = TargetApp.entries
-    val selectedIndex = apps.indexOf(selectedApp)
-
-    PrimaryTabRow(
-        selectedTabIndex = selectedIndex,
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.primary,
-    ) {
-        apps.forEach { app ->
-            Tab(
+    SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
+        apps.forEachIndexed { index, app ->
+            SegmentedButton(
                 selected = app == selectedApp,
                 onClick = { onAppSelected(app) },
-                text = {
-                    Text(
-                        text = stringResource(app.displayNameRes()),
-                        fontWeight = if (app == selectedApp) {
-                            FontWeight.Bold
-                        } else {
-                            FontWeight.Normal
-                        },
-                    )
-                },
-            )
-        }
-    }
-}
-
-/**
- * 개별 제스처 매핑 카드.
- * 터치하면 바텀 시트가 열린다.
- */
-@Composable
-private fun GestureCard(
-    trigger: GestureTrigger,
-    selectedAction: GestureAction?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // 제스처 아이콘
-            Surface(
-                modifier = Modifier.size(44.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = apps.size),
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = trigger.iconText(),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // 제스처 이름 + 현재 매핑된 액션
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(trigger.displayNameRes()),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = selectedAction.displayName(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (selectedAction == null) {
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    },
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Text(text = stringResource(app.displayNameRes()))
             }
         }
     }
 }
 
 /**
- * 액션 선택 바텀 시트 내용.
+ * 단일 선택 라디오 대화상자.
+ *
+ * 선택지를 누르면 즉시 저장하고 닫는다(즉시 적용형). 취소는 값 변경 없이 닫는다.
+ * 행 전체를 selectable(Role.RadioButton)로 만들어 TalkBack에 하나의 라디오 대상으로 노출한다.
  */
 @Composable
-private fun ActionSelectionSheet(
+private fun ActionChoiceDialog(
     trigger: GestureTrigger,
     currentAction: GestureAction?,
     onActionSelected: (GestureAction?) -> Unit,
-    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(bottom = 24.dp),
-    ) {
-        // 시트 제목
-        Text(
-            text = stringResource(
-                R.string.settings_sheet_title,
-                stringResource(trigger.displayNameRes()),
-            ),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-        )
-
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // 액션 옵션 리스트
-        availableActions.forEach { action ->
-            val isSelected = action == currentAction
-            ActionOptionItem(
-                action = action,
-                isSelected = isSelected,
-                onClick = { onActionSelected(action) },
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(
+                    R.string.settings_choice_dialog_title,
+                    stringResource(trigger.displayNameRes()),
+                ),
             )
-        }
-    }
-}
-
-/**
- * 바텀 시트 내 개별 액션 옵션.
- */
-@Composable
-private fun ActionOptionItem(
-    action: GestureAction?,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val backgroundColor = if (isSelected) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surface
-    }
-
-    val textColor = if (isSelected) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 2.dp),
-        shape = RoundedCornerShape(12.dp),
-        color = backgroundColor,
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // 액션 아이콘
-            Surface(
-                modifier = Modifier.size(36.dp),
-                shape = RoundedCornerShape(10.dp),
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerHigh
-                },
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = action.iconText(),
-                        color = if (isSelected) {
-                            MaterialTheme.colorScheme.onPrimary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
-                    )
+        },
+        text = {
+            Column(modifier = Modifier.selectableGroup()) {
+                availableActions.forEach { action ->
+                    val selected = action == currentAction
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .selectable(
+                                selected = selected,
+                                role = Role.RadioButton,
+                                onClick = { onActionSelected(action) },
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = selected, onClick = null)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = action.displayName(),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    }
                 }
             }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Text(
-                text = action.displayName(),
-                style = MaterialTheme.typography.bodyLarge,
-                color = textColor,
-                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            )
-        }
-    }
-}
-
-// ============================================================
-// 헬퍼 함수 (표시 이름, 아이콘 매핑)
-// ============================================================
-
-/**
- * 설정 UI에서 선택 가능한 액션 목록.
- * null은 "(선택 안 함)"을 의미한다.
- */
-private val availableActions: List<GestureAction?> = listOf(
-    GestureAction.SwipeVertical(directionUp = true),
-    GestureAction.SwipeVertical(directionUp = false),
-    GestureAction.Tap,
-    null,
-)
-
-/**
- * GestureAction의 표시 이름 반환.
- * strings.xml에서 가져온다.
- */
-@Composable
-private fun GestureAction?.displayName(): String = when (this) {
-    is GestureAction.SwipeVertical -> if (directionUp) {
-        stringResource(R.string.action_swipe_up)
-    } else {
-        stringResource(R.string.action_swipe_down)
-    }
-    is GestureAction.Tap -> stringResource(R.string.action_tap_bottom_quarter)
-    else -> stringResource(R.string.action_none)
-}
-
-/**
- * GestureAction의 아이콘 텍스트 반환.
- */
-private fun GestureAction?.iconText(): String = when (this) {
-    is GestureAction.SwipeVertical -> if (directionUp) "⬆" else "⬇"
-    is GestureAction.Tap -> "👇"
-    else -> "✕"
-}
-
-/**
- * GestureTrigger의 표시 이름에 대응하는 문자열 리소스 ID.
- */
-private fun GestureTrigger.displayNameRes(): Int = when (this) {
-    GestureTrigger.HeadLeft -> R.string.trigger_head_left
-    GestureTrigger.HeadRight -> R.string.trigger_head_right
-    GestureTrigger.WinkLeft -> R.string.trigger_wink_left
-    GestureTrigger.WinkRight -> R.string.trigger_wink_right
-    GestureTrigger.MouthOpen -> R.string.trigger_mouth_open
-}
-
-/**
- * GestureTrigger의 아이콘 텍스트.
- */
-private fun GestureTrigger.iconText(): String = when (this) {
-    GestureTrigger.HeadLeft -> "👈"
-    GestureTrigger.HeadRight -> "👉"
-    GestureTrigger.WinkLeft -> "😉"
-    GestureTrigger.WinkRight -> "😜"
-    GestureTrigger.MouthOpen -> "😮"
-}
-
-/**
- * TargetApp의 표시 이름에 대응하는 문자열 리소스 ID.
- */
-private fun TargetApp.displayNameRes(): Int = when (this) {
-    TargetApp.YOUTUBE -> R.string.app_youtube
-    TargetApp.MILLIE -> R.string.app_millie
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.common_cancel))
+            }
+        },
+    )
 }
 
 // ============================================================
 // Preview
 // ============================================================
 
-@Preview(showBackground = true, widthDp = 380)
+@Composable
+private fun SettingsScreenPreviewContent(state: SettingsUiState) {
+    FaceswipeTheme(dynamicColor = false) {
+        SettingsScreen(
+            uiState = state,
+            onBackClick = {},
+            onAppSelected = {},
+            onActionSelected = { _, _ -> },
+            onResetConfirmed = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 380, name = "Loading")
 @Composable
 private fun SettingsScreenLoadingPreview() {
-    FaceswipeTheme {
-        SettingsScreen(
-            uiState = SettingsUiState.Loading,
-            onBackClick = {},
-            onAppSelected = {},
-            onActionSelected = { _, _ -> },
-            onResetClick = {},
-        )
-    }
+    SettingsScreenPreviewContent(SettingsUiState.Loading)
 }
 
-@Preview(showBackground = true, widthDp = 380)
+@Preview(showBackground = true, widthDp = 380, name = "Partially mapped")
 @Composable
 private fun SettingsScreenSuccessPreview() {
-    FaceswipeTheme {
-        SettingsScreen(
-            uiState = SettingsUiState.Success(
-                selectedApp = TargetApp.YOUTUBE,
-                mappings = mapOf(
-                    GestureTrigger.HeadLeft to GestureAction.SwipeVertical(directionUp = true),
-                    GestureTrigger.HeadRight to GestureAction.SwipeVertical(directionUp = false),
-                    GestureTrigger.WinkLeft to GestureAction.Tap,
-                    GestureTrigger.WinkRight to null,
-                    GestureTrigger.MouthOpen to null,
-                ),
+    SettingsScreenPreviewContent(
+        SettingsUiState.Success(
+            selectedApp = TargetApp.YOUTUBE,
+            mappings = mapOf(
+                GestureTrigger.HeadLeft to GestureAction.SwipeVertical(directionUp = true),
+                GestureTrigger.HeadRight to GestureAction.SwipeVertical(directionUp = false),
+                GestureTrigger.MouthOpen to null,
             ),
-            onBackClick = {},
-            onAppSelected = {},
-            onActionSelected = { _, _ -> },
-            onResetClick = {},
         )
-    }
+    )
 }
 
-@Preview(showBackground = true, widthDp = 380)
+@Preview(showBackground = true, widthDp = 380, name = "Nothing mapped")
 @Composable
-private fun SettingsScreenAllMappedPreview() {
-    FaceswipeTheme {
-        SettingsScreen(
-            uiState = SettingsUiState.Success(
-                selectedApp = TargetApp.MILLIE,
-                mappings = mapOf(
-                    GestureTrigger.HeadLeft to GestureAction.SwipeVertical(directionUp = false),
-                    GestureTrigger.HeadRight to GestureAction.SwipeVertical(directionUp = true),
-                    GestureTrigger.WinkLeft to GestureAction.Tap,
-                    GestureTrigger.WinkRight to GestureAction.SwipeVertical(directionUp = true),
-                    GestureTrigger.MouthOpen to GestureAction.Tap,
-                ),
-            ),
-            onBackClick = {},
-            onAppSelected = {},
-            onActionSelected = { _, _ -> },
-            onResetClick = {},
+private fun SettingsScreenEmptyPreview() {
+    SettingsScreenPreviewContent(
+        SettingsUiState.Success(
+            selectedApp = TargetApp.MILLIE,
+            mappings = GestureTrigger.settingsEntries.associateWith { null },
         )
-    }
+    )
 }

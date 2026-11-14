@@ -1,6 +1,6 @@
 package com.peanutbutter1001.faceswipe.data.faceswipe.service
 
-import com.peanutbutter1001.faceswipe.domain.faceswipe.model.GestureAction
+import com.peanutbutter1001.faceswipe.domain.faceswipe.model.GestureEvent
 import com.peanutbutter1001.faceswipe.domain.faceswipe.model.TargetApp
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +18,7 @@ import javax.inject.Singleton
  *   프로세스가 살아있는 채 재시작돼도 UI 버튼 상태와 실제 서비스 상태가 일치.
  * - isTargetAppActive: 대상 앱 포그라운드 여부 -> 카메라 파이프라인 활성화 제어
  * - currentTargetApp: 현재 포그라운드 TargetApp -> 앱별 제스처 매핑 조회
- * - gestureAction: 발생한 제스처 액션 -> 접근성 서비스가 실제 스와이프 디스패치
+ * - gestureEvent: 감지된 제스처와 연결된 동작 -> 접근성 서비스가 스와이프 실행·오버레이 표시
  * - resyncRequest: 포그라운드 서비스 (재)시작 시 현재 포그라운드 앱 강제 재동기화 요청
  */
 @Singleton
@@ -33,7 +33,22 @@ class AppStateManager @Inject constructor() {
     private val _currentTargetApp = MutableStateFlow<TargetApp?>(null)
     val currentTargetApp: StateFlow<TargetApp?> = _currentTargetApp.asStateFlow()
 
-    val gestureAction = MutableSharedFlow<GestureAction>(extraBufferCapacity = 1)
+    /**
+     * 감지된 제스처 이벤트. 동작이 연결되지 않은 제스처도 발행해(action=null)
+     * 접근성 서비스가 오버레이로 "연결된 동작이 없어요"를 알릴 수 있게 한다.
+     */
+    val gestureEvent = MutableSharedFlow<GestureEvent>(extraBufferCapacity = 1)
+
+    /**
+     * 대상 앱에서 카메라를 쓸 수 없는 상태(바인딩 실패, 다른 앱이 사용 중 등).
+     * 홈 실행 설명과 서비스 알림에 표시한다.
+     */
+    private val _cameraUnavailable = MutableStateFlow(false)
+    val cameraUnavailable: StateFlow<Boolean> = _cameraUnavailable.asStateFlow()
+
+    fun setCameraUnavailable(unavailable: Boolean) {
+        _cameraUnavailable.value = unavailable
+    }
 
     private val _resyncRequest = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val resyncRequest: SharedFlow<Unit> = _resyncRequest.asSharedFlow()

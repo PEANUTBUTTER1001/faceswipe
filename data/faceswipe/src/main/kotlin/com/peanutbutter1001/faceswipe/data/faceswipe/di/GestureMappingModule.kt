@@ -1,6 +1,8 @@
 package com.peanutbutter1001.faceswipe.data.faceswipe.di
 
+import com.peanutbutter1001.faceswipe.data.faceswipe.repository.AppPreferencesRepositoryImpl
 import com.peanutbutter1001.faceswipe.data.faceswipe.repository.GestureMappingRepositoryImpl
+import com.peanutbutter1001.faceswipe.domain.faceswipe.repository.AppPreferencesRepository
 import com.peanutbutter1001.faceswipe.domain.faceswipe.repository.GestureMappingRepository
 import dagger.Binds
 import dagger.Module
@@ -17,4 +19,10 @@ abstract class GestureMappingModule {
     abstract fun bindGestureMappingRepository(
         impl: GestureMappingRepositoryImpl,
     ): GestureMappingRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAppPreferencesRepository(
+        impl: AppPreferencesRepositoryImpl,
+    ): AppPreferencesRepository
 }

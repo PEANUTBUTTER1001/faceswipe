@@ -13,18 +13,15 @@ sealed interface GestureTrigger {
     /** 고개 오른쪽 회전 */
     data object HeadRight : GestureTrigger
 
-    /** 왼쪽 눈 윙크 */
-    data object WinkLeft : GestureTrigger
-
-    /** 오른쪽 눈 윙크 */
-    data object WinkRight : GestureTrigger
-
     /** 입 벌렸다 다물기 */
     data object MouthOpen : GestureTrigger
+
+    // 윙크(WinkLeft/WinkRight)는 오인식이 잦아 제거했다 (2026-11-14 실기기 테스트).
+    // 이전에 저장된 윙크 매핑 키는 저장소에 남아도 읽히지 않는다.
 
     companion object {
         /** 설정 화면에 노출되는 제스처 목록 */
         val settingsEntries: List<GestureTrigger> =
-            listOf(HeadLeft, HeadRight, WinkLeft, WinkRight, MouthOpen)
+            listOf(HeadLeft, HeadRight, MouthOpen)
     }
 }

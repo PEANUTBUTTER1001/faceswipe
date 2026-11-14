@@ -21,4 +21,11 @@ interface GestureDetector {
      * @return 감지된 제스처 또는 null
      */
     fun detect(faceData: FaceData, timestampMs: Long): GestureTrigger?
+
+    /**
+     * 진행 중이던 제스처 상태를 버린다.
+     * 얼굴이 사라졌거나 카메라가 멈춘 뒤 이어지는 프레임이 이전 상태로 오인식되지 않게 한다.
+     * 쿨다운 시각도 초기화한다(공백 이후에는 쿨다운이 의미 없음).
+     */
+    fun reset()
 }

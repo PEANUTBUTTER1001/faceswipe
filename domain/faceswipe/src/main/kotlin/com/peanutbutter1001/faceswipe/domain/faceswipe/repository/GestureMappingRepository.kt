@@ -40,4 +40,13 @@ interface GestureMappingRepository {
      * @param targetApp 대상 앱
      */
     suspend fun resetMappings(targetApp: TargetApp)
+
+    /**
+     * 특정 앱의 매핑 전체를 한 번에 저장한다 (해제 실행 취소 등 일괄 복원용).
+     * 전달하지 않은 제스처는 변경하지 않는다.
+     */
+    suspend fun setMappings(
+        targetApp: TargetApp,
+        mappings: Map<GestureTrigger, GestureAction?>,
+    )
 }

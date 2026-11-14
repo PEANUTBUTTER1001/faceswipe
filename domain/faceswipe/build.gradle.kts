@@ -8,4 +8,7 @@ dependencies {
 
     // Coroutines - Flow (Repository 인터페이스 반환 타입)
     implementation(libs.kotlinx.coroutines.core)
+
+    // 로컬 단위 테스트 (제스처 감지기·유스케이스, 현재 임계값 기준 회귀 방지)
+    testImplementation(libs.bundles.unit.test)
 }
