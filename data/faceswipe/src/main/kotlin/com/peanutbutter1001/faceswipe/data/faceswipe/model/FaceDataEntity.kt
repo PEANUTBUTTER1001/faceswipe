@@ -9,7 +9,5 @@ data class FaceDataEntity(
     val eulerX: Float,
     val eulerY: Float,
     val eulerZ: Float,
-    val leftEyeOpenProbability: Float? = null,
-    val rightEyeOpenProbability: Float? = null,
     val mouthOpenRatio: Float? = null
 )

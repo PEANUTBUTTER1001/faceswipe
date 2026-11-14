@@ -20,9 +20,11 @@ sealed interface SettingsUiState {
      *
      * @param selectedApp 현재 선택된 대상 앱
      * @param mappings 현재 앱의 제스처-액션 매핑. null 값은 "선택 안 함".
+     * @param pendingUndoApp 방금 연결을 모두 해제해 실행 취소할 수 있는 앱. null이면 실행 취소 없음.
      */
     data class Success(
         val selectedApp: TargetApp,
         val mappings: Map<GestureTrigger, GestureAction?>,
+        val pendingUndoApp: TargetApp? = null,
     ) : SettingsUiState
 }

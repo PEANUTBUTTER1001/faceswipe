@@ -10,6 +10,30 @@
             android:foregroundServiceType="camera"
             android:exported="false" />
 
+        <!-- 빠른 설정 타일: faceswipe 켜기/끄기 -->
+        <service
+            android:name=".service.FaceSwipeTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_face"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!--
+            타일에서 켤 때 카메라 포그라운드 서비스를 포그라운드 상태로 시작하기 위한 투명 Activity.
+            taskAffinity를 비워 앱의 기존 화면을 앞으로 가져오지 않는다.
+        -->
+        <activity
+            android:name=".service.TileStartActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <!-- 유튜브 앱 타겟팅 및 제스처 디스패치용 접근성 서비스 -->
         <service
             android:name=".service.GestureAccessibilityService"

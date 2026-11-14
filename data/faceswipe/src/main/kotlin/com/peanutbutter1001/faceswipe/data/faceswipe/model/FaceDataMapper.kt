@@ -7,7 +7,5 @@ fun FaceDataEntity.toDomain(): FaceData = FaceData(
     eulerX = eulerX,
     eulerY = eulerY,
     eulerZ = eulerZ,
-    leftEyeOpenProbability = leftEyeOpenProbability,
-    rightEyeOpenProbability = rightEyeOpenProbability,
     mouthOpenRatio = mouthOpenRatio
 )

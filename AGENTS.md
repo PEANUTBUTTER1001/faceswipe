@@ -1,149 +1,92 @@
-# 프로젝트 개발 지침 (Project Instructions)
+# faceswipe — 에이전트 작업 규칙
+얼굴 제스처(고개 좌우·입 벌림)로 유튜브·밀리의 서재를 넘기는 Android 접근성 앱 · 설계 이유와 결정 기록: `ARCHITECTURE.md` (예정)
+Source of Truth: `settings.gradle.kts`, `gradle/libs.versions.toml`, `build-logic/` · 이 문서는 사용자 승인을 받아서만 개정한다.
 
-## 0. 핵심 개발 철학 (Core Philosophy)
+## 1. 명령
+- 설치: (미정)
+- 실행: `./gradlew :app:assembleDebug`
+- 테스트: `./gradlew test`
+- 정적 검사: `./gradlew lint`
+- 출시 빌드: `./gradlew :app:assembleRelease` (R8 적용. 서명은 FACESWIPE_KEYSTORE_* 환경변수 4개가 있을 때만, README §출시 빌드)
+- 빌드에는 JDK 21이 필요하다(JAVA_HOME). 클래스를 지우거나 옮긴 뒤 Hilt 생성 코드 오류가 나면 해당 모듈을 clean 후 다시 빌드한다.
 
-- 본 프로젝트는 구글의 공식 안드로이드 레퍼런스 프로젝트인 **Now in Android (NiA)의 아키텍처 가이드라인과 개발 프랙티스를 최우선으로 지향**합니다.
-- 단순히 동작하는 코드가 아닌 확장성, 테스트 용이성, 상태의 예측 가능성을 고려한 현대적인 안드로이드 코드를 제안하세요.
+## 2. 구조 지도
+역할 이름으로 판단한다. 폴더 이름으로 역할을 추측하지 않는다.
 
-## 1. 아키텍처 및 프레임워크
+| 역할 | 경로 | 들어가는 것 |
+|---|---|---|
+| 진입 | `feature/faceswipe/` | 화면(Compose Route/Screen)과 ViewModel |
+| 유스케이스 | `domain/faceswipe/src/main/kotlin/com/peanutbutter1001/faceswipe/domain/faceswipe/usecase/` | 한 가지 목적의 흐름 조율 |
+| 도메인 | `domain/faceswipe/` | 제스처 감지기, 모델, 기본 매핑. Android 의존성 없음 |
+| 포트 | `domain/faceswipe/src/main/kotlin/com/peanutbutter1001/faceswipe/domain/faceswipe/repository/` | 저장소 인터페이스 |
+| 인프라 | `data/faceswipe/` | DataStore, CameraX·ML Kit, 포그라운드·접근성·타일 서비스, 오버레이 |
+| 조립 | `app/` | Application·MainActivity·NavHost. Hilt 모듈은 `data/faceswipe/src/main/kotlin/com/peanutbutter1001/faceswipe/data/faceswipe/di/` |
+| 공유 | `core/ui/` | 테마(고정 팔레트), 설정 목록 행 컴포넌트 |
+| 테스트 | `domain/faceswipe/src/test/` | 도메인·유스케이스 단위 테스트. 화면 판정 로직은 `feature/faceswipe/src/test/` |
 
-- UI는 전적으로 **Jetpack Compose**를 사용합니다. XML 기반 레이아웃은 절대 생성하지 마세요.
-- 아키텍처는 **MVVM (Model-View-ViewModel)** 패턴을 따릅니다.
-- **단방향 데이터 흐름 (UDF):** ViewModel은 화면 상태를 `sealed interface`를 활용해 정의하고, 단일 **`StateFlow`**로 노출해야
-  합니다. UI 컴포넌트는 비즈니스 로직을 직접 처리하지 않고 이벤트를 ViewModel로 전달합니다.
-- 비동기 처리는 RxJava를 쓰지 말고, 무조건 **Kotlin Coroutines와 Flow**를 사용하세요.
-- **`domain` 모듈은 안드로이드 의존성이 없는 순수 코틀린 모듈(Pure Kotlin Module)이어야 합니다.**
-    - `android.*` 패키지나 안드로이드 플랫폼 라이브러리(Context, Toast 등)를 `domain` 모듈에 절대 추가하거나 import하지 마세요.
-    - 비즈니스 로직과 엔티티(Entity), 유스케이스(UseCase) 정의에만 집중해야 합니다.
-- **Hilt 종속성 주입(DI) 규칙 및 모듈 구성을 철저히 지키세요.**
-    - `domain` 모듈의 유스케이스(UseCase)는 `@Inject constructor`를 사용하여 필요한 리포지토리 인터페이스를 주입받도록 작성하세요.
-    - `data` 모듈에는 `domain` 인터페이스와 `data` 구현체를 연결하는 Hilt 모듈(`@Binds` 또는 `@Provides`, 싱글톤)을 반드시 작성하세요.
-    - `feature` 모듈의 ViewModel은 반드시 `@HiltViewModel` 어노테이션을 사용하고, `@Inject constructor`를 통해 `domain`
-      모듈의 유스케이스를 주입받아야 합니다.
+## 3. 의존 규칙
+규칙은 §2의 역할 이름으로 적는다. 경로는 §2에만 둔다.
+- [목표] (R1) 의존은 진입 → 유스케이스 → 도메인 방향으로만 흐른다. 인프라는 포트를 구현하며, 도메인·포트는 진입·인프라·조립을 import하지 않는다.
+- [강제] (R2) 파일·DB·네트워크·IPC·시계·환경변수 접근은 인프라와 조립에서만 한다. 도메인은 Android 의존성이 없는 Kotlin JVM 모듈이다.
+- [목표] (R3) 구현체 생성과 연결은 조립에서만 한다. 그 밖의 코드는 협력자를 생성자 주입(Hilt)으로 받는다.
+- [목표] (R4) 진입 코드는 입력 검증 → 유스케이스(또는 포트) 호출 → 출력 변환만 한다. 규칙과 계산을 두지 않는다.
+- [목표] 화면 상태는 `sealed interface` UiState를 ViewModel의 단일 `StateFlow`로 노출하고, Route가 구독해 상태 없는 Screen에 넘긴다.
 
-## 2. 코딩 스타일 및 규칙
+## 4. 무엇을 어디에
+| 넣을 것 | 위치 |
+|---|---|
+| 사용자에게 보이는 문구 | 해당 모듈의 strings.xml (예: `feature/faceswipe/src/main/res/values/strings.xml`). 코드에 하드코딩 금지 |
+| 제스처·동작·대상 앱 표시 이름 (서비스 오버레이와 화면 공용) | `data/faceswipe/src/main/kotlin/com/peanutbutter1001/faceswipe/data/faceswipe/label/GestureLabels.kt` |
+| 새로 설치했을 때의 기본 제스처 매핑 | `domain/faceswipe/src/main/kotlin/com/peanutbutter1001/faceswipe/domain/faceswipe/model/DefaultGestureMappings.kt` |
+| 제스처 감지 임계값 | `domain/faceswipe/src/main/kotlin/com/peanutbutter1001/faceswipe/domain/faceswipe/model/GestureConfig.kt` |
+| 설정 목록 행·치수 토큰 | `core/ui/src/main/kotlin/com/peanutbutter1001/faceswipe/core/ui/component/SettingsList.kt` |
+| 색 토큰 | `core/ui/src/main/kotlin/com/peanutbutter1001/faceswipe/core/ui/theme/Theme.kt` |
+| UI 디자인 지침 | `docs/android-settings.md` (UI를 만들거나 고치기 전에 읽는다) |
+| 라이브러리 버전·좌표 | `gradle/libs.versions.toml` (빌드 파일에 직접 쓰지 않음) |
 
-- **디자인 시스템 준수:** UI 컴포넌트를 생성하거나 수정할 때는 반드시 프로젝트 루트에 있는 `DESIGN.md` 파일을 먼저 읽고(view_file), 해당 디자인 시스템 가이드라인을 100% 준수하여 코드를 작성하세요.
-- **상태 호이스팅 (State Hoisting):** Composable 함수는 가급적 Stateless하게 작성하고, 상태와 이벤트는 스크린 최상단으로 끌어올리세요.
-- **Preview 규칙:** 모든 UI 컴포넌트(Composable) 함수는 파일 하단에 `@Preview`를 작성하되, 화면의 여러 상태(로딩, 성공, 에러 등)를 확인할 수
-  있도록 다중 Preview 구성을 권장합니다.
-- 문자열 리소스는 코드에 하드코딩하지 말고 반드시 `strings.xml`을 활용하도록 안내하세요.
-- **Gradle 의존성 관리:** 새로운 라이브러리 의존성(Dependency)을 추가할 때는 `build.gradle` 파일에 직접 하드코딩하지 마세요. 반드시 **Version Catalog (`gradle/libs.versions.toml`)** 파일에 버전과 라이브러리를 형식에 맞게 먼저 정의한 뒤, `build.gradle`에서
-  불러와 적용하는 방식으로 가이드하세요.
-- 코드를 제안할 때는 항상 가독성과 성능(Recomposition 최적화)을 고려하세요.
-- 코드 블록에는 변경된 부분이나 핵심 로직에 주석을 상세히 달아 리뷰어가 의도를 빠르게 파악할 수 있게 하세요.
+## 5. 새 기능 레시피
+- [목표] (R8) 작업 전에 관련 코드의 책임·의존성·기존 관례를 확인하고 아래 순서를 따른다. 일반적인 모범 사례를 이유로 현재 구조를 일괄 교체하지 않는다.
+1. 도메인 모델과 규칙
+2. 포트 (R7 조건을 충족할 때만)
+3. 유스케이스 (흐름 조율이 필요할 때만)
+4. 인프라 구현과 Hilt `@Binds`
+5. 진입: UiState → ViewModel(`@HiltViewModel`) → Route/Screen, 다중 `@Preview`
+6. 조립: NavHost에 목적지 등록
+7. 테스트: 도메인은 I/O 없이, 포트는 테스트 대역으로
 
-## 3. 작업 프로세스 및 답변 스타일
+## 6. 알려진 예외
+- [목표] (R9) 아래 예외는 늘리지 않는다. 수정하는 파일에 예외가 있어도 요청 범위 밖이면 고치지 않고 별도 작업으로 제안한다. 예외 추가는 §9에 따라 승인받는다.
 
-- **선 조사, 후 계획, 후 개발 (Investigate → Plan → Code):** 요청 즉시 코드 개발에 착수하지 마세요.
-    - 코드 변경 전 반드시 관련 코드의 **전체 실행 경로(Entry Point → 중간 처리 → 최종 결과)**를
-      끝까지 추적하세요. 중간에 "아마 이럴 것이다"라고 추측하지 마세요.
-    - 변경 대상 파일뿐 아니라, 해당 코드를 **호출하는 쪽**과 **호출받는 쪽** 모두 확인하세요.
-    - 조사 결과를 바탕으로 작업 내용에 대한 구현 방향, 예상되는 변경 사항을 문서(마크다운 형태의 명세서 및 계획서)로 정리하여 제시하세요.
-    - 사용자가 계획을 **승인(Approve)**한 이후에만 실제 코드 작성을 시작하세요.
+| 규칙 | 파일 | 사유 |
+|---|---|---|
+| R1 | `feature/faceswipe` | 진입(ViewModel·Route)이 인프라(`AppStateManager`, `PermissionChecker`, `ServiceController`, `TileRequester`, `GestureLabels`)를 직접 사용 |
 
-- **플랫폼 제약 검증 (Platform Constraint Check):**
-    - Android API를 사용할 때는 반드시 **최소 타겟 API 레벨에서의 동작 제약**을 확인하세요.
-    - 특히 다음 영역은 Android 버전별로 동작이 크게 다르므로 주의하세요:
-      백그라운드 Activity 실행, 알림 권한, 포그라운드 서비스 타입,
-      정확한 알람(Exact Alarm) 권한, 미디어 재생 정책
-    - 제약이 확인되면 대안을 제시하되, **시스템이 공식 지원하는 메커니즘**
-      (예: fullScreenIntent, PendingIntent)을 우선 활용하세요.
+## 7. 하지 말 것
+- [목표] (R7) 인터페이스·유스케이스·모듈·공통 컴포넌트는 구현이 2개 이상이거나 테스트 대역이 실제로 필요할 때만 만들고, 추가할 때는 해결할 문제(현재의 결합, 중복, 테스트 어려움, 변경 영향)를 밝힌다.
+- [목표] (R11) 요청된 구현에 필요한 변경만 한다. 더 큰 리팩터링이 유익해 보여도 요청 범위 밖이면 같은 변경에 섞지 않고 먼저 제안으로 분리한다.
+- 유스케이스 위에 서비스 계층을 한 겹 더 두지 않는다.
+- "나중을 위한" 인터페이스·기반 클래스·범용 헬퍼를 만들지 않는다.
+- XML 레이아웃·RxJava를 쓰지 않는다. UI는 Compose, 비동기는 Coroutines·Flow, DI는 Hilt만 쓴다.
+- 윙크(눈 감음) 제스처를 다시 넣지 않는다. 오인식이 잦아 제거했다.
+- `GestureConfig` 임계값은 실측 근거 없이 바꾸지 않는다. 현재 값은 사용자가 조정한 값이다.
+- 프로젝트 고유 함정:
+  - 접근성 이벤트의 `packageName`은 활성 창이 아닐 수 있다(백그라운드 유튜브가 이벤트를 보냄). 포그라운드 판정은 `rootInActiveWindow`로 한다. 런처를 무시 목록에 넣지 않는다.
+  - 카메라 포그라운드 서비스는 백그라운드에서 시작할 수 없다. 타일 등 화면 밖 진입점은 보이는 Activity를 거쳐 시작한다.
+  - ML Kit이 진단 통계를 전송한다(`INTERNET`). 개인정보 문구에 "아무것도 보내지 않음"이라고 쓰지 않는다.
+  - 밀리의 서재는 USB 디버깅 중 실행을 막는다. 해당 앱 동작은 USB를 뺀 상태에서 확인한다.
+  - (사람이 작성)
 
-- **해결책 비교 분석 (Solution Comparison):**
-    - 구현 방법이 2개 이상 존재할 때는 아래 형식의 비교 테이블을 제시하고
-      추천안을 명시하세요.
+## 8. 완료 조건
+- §1의 실행·테스트·정적 검사 명령이 모두 통과한다.
+- 새 도메인 규칙에는 I/O 없는 단위 테스트가 있다.
+- §2·§4에 없는 위치에 파일을 만들지 않았다.
+- 모듈·의존성·명령·경로를 바꿨다면 AGENTS.md를 직접 고치지 않고 `/agents-md`로 개정을 요청한다.
 
-      | 방법 | 장점 | 단점 | 추천 |
-      |---|---|---|---|
-      | 방법 A | ... | ... | ✅ |
-      | 방법 B | ... | ... | |
-
-    - 선택한 방법이 동작하지 않을 경우를 대비하여, 대안(Fallback)을
-      항상 1개 이상 준비하세요.
-
-- **근본 원인 분석 (Root Cause Analysis):**
-    - 코드가 기대대로 동작하지 않을 때, 증상만 고치지 말고
-      **왜 동작하지 않는지**를 먼저 규명하세요.
-    - 분석 결과를 아래 형식으로 정리한 후 수정안을 제시하세요:
-      ```
-      증상: (관찰된 현상)
-      원인: (기술적 근본 원인)
-      수정: (해결 방법 및 근거)
-      ```
-
-- **변경 영향 범위 분석 (Impact Analysis):**
-    - 코드를 수정하기 전에, 해당 변경이 영향을 미치는 **모든 호출처**를 나열하세요.
-    - DB 스키마 변경 시 마이그레이션 영향, API 시그니처 변경 시 호출 지점,
-      모델 필드 추가 시 매퍼/직렬화 코드 등을 빠짐없이 확인하세요.
-    - 영향 범위가 3개 파일 이상이면, 변경 순서를 의존성 방향
-      (Domain → Data → Feature)에 따라 명시하세요.
-
-## 4. 문서 작성 지침 (Documentation Standards)
-
-### 구현 계획서 (Implementation Plan)
-
-코드 작성 전 반드시 아래 구조의 구현 계획서를 작성하세요.
-
-- **기능 요약 테이블**: 옵션/모드별 동작을 한눈에 비교할 수 있는 테이블로 시작하세요.
-- **데이터 흐름도**: 컴포넌트 간 호출 관계를 ASCII 다이어그램 또는 Mermaid로 시각화하세요.
-  각 모드/분기별로 별도 흐름을 작성합니다.
-- **변경 파일 목록**: 모듈/레이어별로 그룹화하고, 각 파일에 `[NEW]`, `[MODIFY]`, `[DELETE]` 태그를 붙이세요.
-  파일명은 반드시 클릭 가능한 링크로 작성합니다.
-- **핵심 코드 변경**: 주요 변경 로직은 diff 블록 또는 의사 코드로 제시하여
-  리뷰어가 코드를 읽지 않고도 설계 의도를 파악할 수 있게 하세요.
-- **검증 계획 (Verification Plan)**: 반드시 아래 형식의 시나리오/기대결과 테이블을 포함하세요.
-
-| # | 시나리오        | 기대 결과       |
-|---|-------------|-------------|
-| 1 | 구체적인 사용자 행동 | 구체적인 시스템 응답 |
-
-정상 케이스, 엣지 케이스, 마이그레이션/호환성 케이스를 모두 포함합니다.
-- **커밋 전략**: §5의 Conventional Commits 규칙에 따라 변경 목적별로 분리된 커밋 메시지를 순서대로 제안하세요.
-
-### 작업 완료 보고서 (Walkthrough)
-구현 완료 후 아래 구조의 보고서를 작성하세요.
-
-- **개요**: 구현한 기능을 2~3줄로 요약하되, 핵심 동작 차이를 테이블로 정리하세요.
-- **변경 파일 테이블**: Domain → Data → Feature 순서로 레이어별 그룹화하고,
-  각 파일의 변경 내용을 한 줄로 요약합니다. 파일명은 클릭 가능한 링크로 작성합니다.
-- **데이터 흐름도**: 구현 계획서의 흐름도를 실제 구현 기준으로 업데이트합니다.
-- **검증 결과**: 빌드 성공 여부, 테스트 결과를 명시합니다.
-- **Known Issues**: 알려진 문제가 있으면 원인 추정과 함께 기록합니다.
-
-## 5. 깃허브(GitHub) 협업 및 관리 규칙
-
-에이전트는 코드 변경 사항을 제안할 때 다음의 깃허브 관리 표준을 준수하여 가이드해야 합니다.
-
-- **브랜치 네이밍 제안 (Branch Naming):**
-    - 새로운 작업 착수 시, 목적에 맞는 적절한 브랜치 이름을 가장 먼저 제안하세요.
-    - 형식: `타입/짧은설명` (예: `feat/diet-tracking-ui`, `fix/login-crash`)
-
-- **커밋 메시지 규격화 (Conventional Commits):**
-    - 코드 제안 시, 해당 작업 내역에 맞는 `타입(스코프): 제목` 형태의 커밋 메시지를 함께 제안하세요.
-    - 타입 예시: `feat` (기능 추가), `fix` (버그 수정), `refactor` (리팩토링), `style` (포맷팅), `docs` (문서), `chore` (
-      빌드/세팅)
-    - 리팩토링(refactor)과 기능 추가(feat) 등 목적이 다른 작업은 한 번의 커밋에 담지 않고 분리하도록 원칙을 안내하세요.
-    - *예시:* `feat(ui): Jetpack Compose를 활용한 식단 기록 화면 추가`
-
-- **Pull Request (PR) 내용 구조화:**
-    - 작업 단위가 완료되어 PR을 올릴 때 사용할 수 있도록 다음 마크다운 템플릿 형식에 맞춰 상세 내용을 작성해 주세요.
-      ```text
-      ## 📌 Motivation (작업 배경)
-      - (작업을 수행한 명확한 이유)
-      - 관련 이슈 번호: close #
-  
-      ## 🛠️ Key Changes (주요 변경 사항)
-      - [ ] (핵심 로직 변경 내용 1)
-      - [ ] (핵심 로직 변경 내용 2)
-
-      ## 📁 변경 파일 목록
-      모듈/레이어별로 그룹화하여 각 파일의 변경 태그([NEW]/[MODIFY]/[DELETE])와
-      변경 내용 한 줄 요약을 테이블로 작성합니다.
-
-      ## ⚠️ Known Issues (선택)
-      알려진 문제가 있으면 원인 추정과 함께 기록합니다.
-      ```
-
-- **깃허브 활용 컨설팅 (Advanced Strategy):**
-    - 단순 코드 제안에 그치지 않고, 버그 수정 시 `GitHub Issue` 연동법을 안내하거나, 빌드 관련 설정 시 `GitHub Actions`를 통한 CI/CD 파이프라인 자동화 등 프로젝트의 완성도를 높일 전략을 함께 제안하세요.
+## 9. 멈추고 물어볼 때
+- [목표] (R10) §2에 없는 역할·위치나 새 계층·모듈이 필요하면 구현 전에 멈추고 보고한다.
+- [목표] (R12) 설계나 리팩터링을 제안할 때는 어떤 책임·의존성이 어떻게 달라지는지와 어떤 테스트로 동작 보존을 확인할지를 함께 제시한다.
+- 새 외부 의존성(라이브러리, 서비스)을 추가할 때
+- 저장 형식(DataStore 키)·권한·접근성 서비스 설정·매니페스트 진입점을 바꿀 때
+- 백그라운드 실행·포그라운드 서비스·알림 권한처럼 Android 버전별 제약이 있는 API를 쓸 때
+- §6 예외를 추가할 때
+- 데이터 삭제처럼 되돌릴 수 없는 작업을 할 때

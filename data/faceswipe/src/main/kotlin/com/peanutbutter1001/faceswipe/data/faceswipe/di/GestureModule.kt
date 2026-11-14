@@ -3,7 +3,6 @@ package com.peanutbutter1001.faceswipe.data.faceswipe.di
 import com.peanutbutter1001.faceswipe.domain.faceswipe.gesture.GestureDetector
 import com.peanutbutter1001.faceswipe.domain.faceswipe.gesture.HeadTurnDetector
 import com.peanutbutter1001.faceswipe.domain.faceswipe.gesture.MouthOpenDetector
-import com.peanutbutter1001.faceswipe.domain.faceswipe.gesture.WinkDetector
 import com.peanutbutter1001.faceswipe.domain.faceswipe.model.GestureConfig
 import dagger.Binds
 import dagger.Module
@@ -26,9 +25,6 @@ abstract class GestureModule {
     @IntoSet
     abstract fun bindHeadTurnDetector(impl: HeadTurnDetector): GestureDetector
 
-    @Binds
-    @IntoSet
-    abstract fun bindWinkDetector(impl: WinkDetector): GestureDetector
 
     @Binds
     @IntoSet

@@ -33,4 +33,7 @@ dependencies {
 
     // Serialization (type-safe navigation)
     implementation(libs.kotlinx.serialization.json)
+
+    // 로컬 단위 테스트 (설정 마법사 단계·권한 판정 순수 함수)
+    testImplementation(libs.bundles.unit.test)
 }

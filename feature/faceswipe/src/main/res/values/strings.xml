@@ -1,42 +1,208 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 기존 문자열 -->
+    <!-- 공통 -->
     <string name="app_title">faceswipe</string>
-    <string name="app_subtitle">얼굴 움직임으로 콘텐츠를 조작하세요</string>
-    <string name="camera_permission_title">카메라 권한</string>
-    <string name="camera_permission_desc">앱 실행 시 자동 요청됩니다</string>
-    <string name="permission_granted">허용됨</string>
-    <string name="permission_enabled">활성화됨</string>
+    <string name="common_close">닫기</string>
+    <string name="common_back">뒤로가기</string>
+    <string name="common_cancel">취소</string>
+    <string name="common_next">다음</string>
+    <string name="common_later">나중에 할게요</string>
+    <string name="common_ok">확인</string>
+    <string name="privacy_line">얼굴 인식은 이 기기 안에서만 처리하고, 얼굴 영상을 저장하거나 밖으로 보내지 않아요.</string>
+
+    <!-- 첫 실행 소개 -->
+    <string name="welcome_title">손 대신 얼굴로\n화면을 넘겨요</string>
+    <string name="welcome_lead">고개를 돌리거나 입을 벌리면 유튜브 쇼츠와 밀리의 서재를 손 대지 않고 넘길 수 있어요.</string>
+    <string name="welcome_step1_title">1. 권한 허용</string>
+    <string name="welcome_step1_body">접근성, 카메라, 알림 권한을 차례로 안내해요.</string>
+    <string name="welcome_step1_tag">약 1분</string>
+    <string name="welcome_step2_title">2. 제스처 연결</string>
+    <string name="welcome_step2_body">앱마다 어떤 얼굴 움직임에 어떤 동작을 할지 골라요.</string>
+    <string name="welcome_step2_tag">설정에서 언제든 바꿀 수 있어요</string>
+    <string name="welcome_step3_title">3. 대상 앱 열기</string>
+    <string name="welcome_step3_body">대상 앱을 열면 카메라가 켜지고, 다른 앱에서는 꺼져요.</string>
+    <string name="welcome_step3_tag">켜져 있는 동안 알림창에 표시돼요</string>
+    <string name="welcome_start">시작하기</string>
+
+    <!-- 설정 마법사: 공통 -->
+    <string name="setup_step_counter">%1$d / %2$d</string>
+    <string name="setup_step_counter_cd">%2$d단계 중 %1$d단계</string>
+
+    <!-- 설정 마법사: 접근성 고지 -->
+    <string name="setup_disclose_title">화면을 넘기려면\n접근성 권한이 필요해요</string>
+    <string name="setup_disclose_lead">손 사용이 불편한 분이 얼굴 움직임만으로 앱을 조작할 수 있도록 Android 접근성 API를 사용해요.</string>
+    <string name="setup_fact_access_title">접근하는 정보</string>
+    <string name="setup_fact_access_body">지금 화면에 떠 있는 앱의 이름. 화면 속 글자나 입력 내용은 읽지 않아요.</string>
+    <string name="setup_fact_use_title">사용 방법</string>
+    <string name="setup_fact_use_body">유튜브나 밀리의 서재가 열리면 카메라를 켜고, 인식한 제스처에 연결된 스와이프나 탭을 대신 실행해요.</string>
+    <string name="setup_fact_share_title">공유 및 전송</string>
+    <string name="setup_fact_share_body">앱 이름, 얼굴 정보, 제스처 기록을 밖으로 보내지 않아요.</string>
+    <string name="setup_fact_not_title">하지 않는 일</string>
+    <string name="setup_fact_not_body">대상 앱이 아닌 화면에서는 아무것도 누르지 않고, 카메라도 꺼 둬요.</string>
+    <string name="setup_disclose_caption">동의하면 접근성 설정이 열려요. \'설치된 앱 &gt; faceswipe 제스처 서비스\'를 눌러 켜 주세요.</string>
+    <string name="setup_agree">동의하고 설정 열기</string>
+    <string name="setup_a11y_still_off">접근성 권한이 아직 꺼져 있어요</string>
+    <string name="setup_a11y_enabled">접근성 권한이 켜졌어요</string>
+
+    <!-- 설정 마법사: 카메라 -->
+    <string name="setup_camera_title">얼굴 제스처를 보려면\n카메라가 필요해요</string>
+    <string name="setup_camera_lead">전면 카메라로 고개 방향과 눈·입 모양을 인식해요.</string>
+    <string name="setup_camera_when_title">언제 켜지나요</string>
+    <string name="setup_camera_when_body">대상 앱이 화면에 있을 때만 켜져요. 켜져 있으면 상태 표시줄에 초록 점이 보여요.</string>
+    <string name="setup_camera_when_body_legacy">대상 앱이 화면에 있을 때만 켜져요. 켜져 있는 동안 알림창에 faceswipe 알림이 보여요.</string>
+    <string name="setup_camera_what_title">무엇을 보나요</string>
+    <string name="setup_camera_what_body">얼굴 각도와 눈·입이 열린 정도만 그 순간 계산해요.</string>
+    <string name="setup_camera_store_title">저장하지 않아요</string>
+    <string name="setup_camera_store_body">사진이나 영상을 저장하거나 밖으로 보내지 않아요.</string>
+    <string name="setup_camera_denied">카메라 권한이 거부됐어요. 다시 요청할 수 있어요.</string>
+    <string name="setup_camera_blocked">Android가 더 이상 묻지 않아요. 앱 정보 &gt; 권한 &gt; 카메라에서 허용해 주세요.</string>
+    <string name="setup_camera_allow">카메라 허용하기</string>
+    <string name="setup_camera_retry">다시 요청</string>
+    <string name="setup_camera_open_app_info">앱 정보 열기</string>
+    <string name="setup_camera_granted">카메라 권한을 허용했어요</string>
+    <string name="setup_camera_still_denied">카메라 권한이 아직 허용되지 않았어요</string>
+
+    <!-- 설정 마법사: 알림 -->
+    <string name="setup_notif_title">실행 중 알림으로\n언제든 멈출 수 있어요</string>
+    <string name="setup_notif_lead">faceswipe가 켜져 있는 동안 알림창에 상태와 중지 버튼을 보여 줘요.</string>
+    <string name="setup_notif_preview_app">faceswipe · 지금</string>
+    <string name="setup_notif_preview_title">faceswipe 실행 중</string>
+    <string name="setup_notif_preview_body">유튜브에서 얼굴 제스처를 인식하고 있어요</string>
+    <string name="setup_notif_preview_action">중지</string>
+    <string name="setup_notif_preview_cd">알림 미리보기</string>
+    <string name="setup_notif_allow">알림 허용하기</string>
+    <string name="setup_notif_skip">건너뛰기</string>
+    <string name="setup_notif_granted">알림을 허용했어요</string>
+
+    <!-- 설정 마법사: 완료 -->
+    <string name="setup_done_title">준비가 끝났어요</string>
+    <string name="setup_done_step1_title">홈에서 faceswipe를 켜요</string>
+    <string name="setup_done_step1_body">홈으로 가면 바로 켜 둘게요.</string>
+    <string name="setup_done_step2_title">유튜브나 밀리의 서재를 열어요</string>
+    <string name="setup_done_step2_body">알림창에 \'인식하고 있어요\'가 보이면 준비된 거예요.</string>
+    <string name="setup_done_step3_title">고개를 돌려 넘겨요</string>
+    <string name="setup_done_step3_body">제스처마다 연결된 동작은 홈 &gt; 앱별 제스처 설정에서 바꿀 수 있어요.</string>
+    <string name="setup_done_tile_title">빠른 설정 타일</string>
+    <string name="setup_done_tile_added">추가했어요. 상단을 내리면 바로 켜고 끌 수 있어요.</string>
+    <string name="setup_done_tile_missing">상단을 내려 앱을 열지 않고 켜고 끌 수 있어요.</string>
+    <string name="setup_add_tile">빠른 설정에 타일 추가</string>
+    <string name="setup_try">유튜브에서 시험해 보기</string>
+    <string name="setup_go_home">홈으로</string>
+    <string name="setup_youtube_missing">유튜브가 설치되어 있지 않아요</string>
+
+    <!-- 빠른 설정 타일 -->
+    <string name="tile_added_message">빠른 설정에 타일을 추가했어요</string>
+    <string name="tile_already_message">이미 빠른 설정에 추가되어 있어요</string>
+    <string name="tile_help_title">빠른 설정에 타일 추가</string>
+    <string name="tile_help_body">화면 상단을 두 번 내려 빠른 설정을 연 뒤, 편집(연필) 버튼을 눌러 \'faceswipe\' 타일을 끌어다 놓으세요.</string>
+
+    <!-- 홈: 섹션 -->
+    <string name="section_run">실행</string>
+    <string name="section_permissions">권한</string>
+    <string name="section_gestures">제스처</string>
+    <string name="section_help">도움말</string>
+    <string name="section_info">정보</string>
+
+    <!-- 홈: 실행 -->
+    <string name="service_switch_title">faceswipe 실행</string>
+    <string name="service_status_off">꺼져 있어요</string>
+    <string name="service_status_unavailable">권한을 모두 허용하면 켤 수 있어요. 탭하면 안내해요</string>
+    <string name="service_status_active">얼굴 인식 중 · 대상 앱 사용 중</string>
+    <string name="service_status_waiting">대상 앱 대기 중 · 카메라 절전</string>
+    <string name="service_status_camera_unavailable">카메라를 쓸 수 없어요. 다른 앱이 카메라를 쓰고 있는지 확인해 주세요</string>
+    <string name="service_started">faceswipe를 켰어요. 유튜브나 밀리의 서재를 열어 보세요</string>
+    <string name="service_stopped">faceswipe를 껐어요</string>
+
+    <!-- 홈: 권한 -->
     <string name="accessibility_service_title">접근성 서비스</string>
-    <string name="accessibility_permission_desc">설정에서 faceswipe을 활성화하세요</string>
-    <string name="open_settings">설정 열기</string>
-    <string name="open_permission_settings">권한 설정 열기</string>
-    <string name="target_app_detected">▶  대상 앱 감지됨 — 얼굴 인식 활성화 중</string>
-    <string name="target_app_waiting">⏸  대상 앱 대기 중 — 카메라 절전 모드</string>
-    <string name="start_service">faceswipe 시작</string>
-    <string name="stop_service">faceswipe 중지</string>
-    <string name="permissions_required">위 권한을 모두 허용해야 시작할 수 있습니다</string>
+    <string name="accessibility_on_desc">대상 앱 감지와 스와이프·탭 실행에 사용해요</string>
+    <string name="accessibility_off_desc">얼굴 제스처로 화면을 넘기려면 필요해요</string>
+    <string name="camera_permission_title">카메라</string>
+    <string name="camera_on_desc">대상 앱이 화면에 있을 때만 켜져요</string>
+    <string name="camera_off_desc">얼굴 제스처 인식에 필요해요</string>
+    <string name="notification_permission_title">알림</string>
+    <string name="notification_on_desc">실행 중 알림에서 바로 멈출 수 있어요</string>
+    <string name="notification_off_desc">실행 중 알림의 중지 버튼을 보려면 필요해요</string>
+    <string name="permission_on">켜짐</string>
+    <string name="permission_off">꺼짐</string>
+    <string name="permission_granted">허용됨</string>
+    <string name="permission_denied">허용 필요</string>
 
-    <!-- 설정 화면 -->
+    <!-- 홈: 제스처 -->
+    <string name="gesture_settings_entry">앱별 제스처 설정</string>
+    <string name="gesture_summary_item">%1$s %2$d개</string>
+    <string name="gesture_summary_separator">" · "</string>
+    <string name="overlay_switch_title">인식 알림 표시</string>
+    <string name="overlay_switch_desc">제스처를 인식하면 화면 위에 잠깐 알려 줘요</string>
+
+    <!-- 홈: 도움말 -->
+    <string name="howto_entry">사용 방법</string>
+    <string name="howto_entry_desc">제스처별 동작법과 잘 인식되는 자세</string>
+    <string name="tile_row_title">빠른 설정 타일</string>
+    <string name="tile_row_added_desc">상단을 내리면 faceswipe 타일이 보여요</string>
+    <string name="tile_row_missing_desc">앱을 열지 않고 켜고 끌 수 있어요</string>
+    <string name="tile_row_added">추가됨</string>
+    <string name="tile_row_add">추가하기</string>
+
+    <!-- 홈: 정보 -->
+    <string name="privacy_policy">개인정보 처리방침</string>
+    <string name="open_source_licenses">오픈소스 라이선스</string>
+    <string name="app_version">앱 버전</string>
+
+    <!-- 개인정보 처리방침 요약 -->
+    <string name="privacy_sheet_title">개인정보 처리방침 요약</string>
+    <string name="privacy_camera_title">카메라</string>
+    <string name="privacy_camera_body">얼굴 각도와 눈·입 모양을 그 순간 계산하는 데만 사용해요. 사진이나 영상을 저장하지 않아요.</string>
+    <string name="privacy_a11y_title">접근성 API</string>
+    <string name="privacy_a11y_body">지금 화면의 앱 이름만 확인해 대상 앱을 알아내고, 연결된 스와이프나 탭을 실행해요. 화면 속 글자는 읽지 않아요.</string>
+    <string name="privacy_storage_title">설정 저장</string>
+    <string name="privacy_storage_body">제스처 연결과 앱 설정은 이 기기에만 저장돼요.</string>
+    <string name="privacy_network_title">외부 전송</string>
+    <string name="privacy_network_body">얼굴 정보, 앱 이름, 제스처 기록은 서버로 보내지 않고, 광고나 분석 도구를 넣지 않았어요. 인식 기능을 제공하는 Google ML Kit이 성능·오류 통계(기기·앱 정보)를 Google에 보낼 수 있어요.</string>
+    <string name="privacy_full">전문 보기</string>
+    <!-- 처리방침 웹페이지 URL. 비어 있으면 "전문 보기"를 숨긴다 (명세 Q1: 나중에 제공) -->
+    <string name="privacy_policy_url" translatable="false"></string>
+
+    <!-- 오픈소스 라이선스 -->
+    <string name="license_apache2">Apache 2.0</string>
+    <string name="license_mlkit">ML Kit 서비스 약관</string>
+
+    <!-- 사용 방법 -->
+    <string name="howto_title">사용 방법</string>
+    <string name="howto_section_order">사용 순서</string>
+    <string name="howto_step1_title">홈에서 faceswipe를 켜요</string>
+    <string name="howto_step1_body">실행 중에는 알림창에서도 멈출 수 있어요.</string>
+    <string name="howto_step2_title">대상 앱을 열어요</string>
+    <string name="howto_step2_body">유튜브나 밀리의 서재를 열면 카메라가 켜져요.</string>
+    <string name="howto_step3_title">얼굴 제스처로 넘겨요</string>
+    <string name="howto_step3_body">인식되면 화면 위에 \'제스처 → 동작\'이 잠깐 보여요.</string>
+    <string name="howto_section_gestures">제스처별 동작법</string>
+    <string name="howto_head_left">고개를 왼쪽으로 돌렸다가 정면으로 돌아와요.</string>
+    <string name="howto_head_right">고개를 오른쪽으로 돌렸다가 정면으로 돌아와요.</string>
+    <string name="howto_mouth_open">입을 크게 벌린 채 잠깐 멈췄다가 다물어요. 말하는 중에는 잘못 인식될 수 있어요.</string>
+    <string name="howto_section_tips">잘 인식되게 하려면</string>
+    <string name="howto_tip1_title">얼굴 전체가 보이게</string>
+    <string name="howto_tip1_body">휴대전화를 얼굴 정면에 두고, 이마부터 턱까지 화면에 들어오게 해요.</string>
+    <string name="howto_tip2_title">밝은 곳에서</string>
+    <string name="howto_tip2_body">얼굴 쪽이 어두우면 인식이 늦어져요. 뒤에서 빛이 비치는 자리는 피해요.</string>
+    <string name="howto_tip3_title">동작은 크게, 한 번에 하나씩</string>
+    <string name="howto_tip3_body">같은 동작이 두 번 실행되지 않도록, 연속으로 움직일 때는 잠시 쉬어요.</string>
+    <string name="howto_need_permission">먼저 권한을 허용해 주세요</string>
+
+    <!-- 제스처 설정 -->
     <string name="settings_title">제스처 설정</string>
-    <string name="settings_back">뒤로가기</string>
-    <string name="settings_reset">초기화</string>
-    <string name="settings_sheet_title">%s — 액션 선택</string>
-
-    <!-- 대상 앱 -->
-    <string name="app_youtube">유튜브</string>
-    <string name="app_millie">밀리의 서재</string>
-
-    <!-- 제스처 트리거 -->
-    <string name="trigger_head_left">고개 왼쪽 돌리기</string>
-    <string name="trigger_head_right">고개 오른쪽 돌리기</string>
-    <string name="trigger_wink_left">왼쪽 윙크</string>
-    <string name="trigger_wink_right">오른쪽 윙크</string>
-    <string name="trigger_mouth_open">입 벌리기</string>
-
-    <!-- 액션 -->
-    <string name="action_swipe_up">위로 스와이프</string>
-    <string name="action_swipe_down">아래로 스와이프</string>
-    <string name="action_tap_bottom_quarter">하단 1/4 영역 터치</string>
-    <string name="action_none">(선택 안 함)</string>
+    <string name="settings_description">선택한 앱이 화면에 있을 때 제스처에 연결된 동작을 실행해요. 바꾸면 바로 저장돼요.</string>
+    <string name="settings_section_target_app">대상 앱</string>
+    <string name="settings_section_gestures">제스처와 동작</string>
+    <string name="settings_section_reset">초기화</string>
+    <string name="settings_reset_title">%s 제스처 연결 모두 해제</string>
+    <string name="settings_reset_summary">연결된 제스처 %d개</string>
+    <string name="settings_reset_summary_empty">연결된 제스처가 없어요</string>
+    <string name="settings_reset_dialog_title">%s 제스처 연결을 모두 해제할까요?</string>
+    <string name="settings_reset_dialog_message">연결된 제스처 %d개가 모두 \'선택 안 함\'으로 바뀌어요. 해제 직후에는 실행 취소할 수 있어요.</string>
+    <string name="settings_reset_confirm">모두 해제</string>
+    <string name="settings_reset_done">%s 제스처 연결을 해제했어요</string>
+    <string name="settings_reset_undo">실행 취소</string>
+    <string name="settings_reset_undone">연결을 되돌렸어요</string>
+    <string name="settings_choice_dialog_title">%s 동작</string>
 </resources>

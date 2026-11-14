@@ -6,31 +6,19 @@ import androidx.camera.core.ImageProxy
 import com.peanutbutter1001.faceswipe.data.faceswipe.model.FaceDataEntity
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceContour
-import com.google.mlkit.vision.face.FaceDetection
-import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.google.mlkit.vision.face.FaceDetector
 
 /**
  * CameraX ImageAnalysis.Analyzer 구현체.
  *
- * 최적화 전략:
- *  - PERFORMANCE_MODE_FAST: 빠른 처리 우선
- *  - CLASSIFICATION_MODE_ALL: 눈 열림 확률 추출을 위해 분류 모드 활성화
- *  - CONTOUR_MODE_ALL: 입술 컨투어로 입 벌림 감지
- *  - 랜드마크 비활성화: Euler 각도 + 눈 분류 + 입술 컨투어에만 집중
- *  - STRATEGY_KEEP_ONLY_LATEST: 백프레셔 방지 (FaceTrackingRepositoryImpl에서 설정)
+ * ML Kit 감지기는 직접 만들지 않고 주입받는다. 생성·재사용·close는
+ * FaceTrackingRepositoryImpl이 bind()~release() 주기로 관리한다 (감지기 누수 방지).
+ * 감지기 옵션과 STRATEGY_KEEP_ONLY_LATEST 백프레셔도 FaceTrackingRepositoryImpl에서 설정한다.
  */
 class CameraAnalyzer(
+    private val detector: FaceDetector,
     private val onFaceDetected: (FaceDataEntity) -> Unit
 ) : ImageAnalysis.Analyzer {
-
-    private val detector = FaceDetection.getClient(
-        FaceDetectorOptions.Builder()
-            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
-            .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
-            .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
-            .build()
-    )
 
     @ExperimentalGetImage
     override fun analyze(imageProxy: ImageProxy) {
@@ -52,8 +40,6 @@ class CameraAnalyzer(
                             eulerX = face.headEulerAngleX,
                             eulerY = face.headEulerAngleY,
                             eulerZ = face.headEulerAngleZ,
-                            leftEyeOpenProbability = face.leftEyeOpenProbability,
-                            rightEyeOpenProbability = face.rightEyeOpenProbability,
                             mouthOpenRatio = calculateMouthOpenRatio(
                                 face.getContour(FaceContour.UPPER_LIP_BOTTOM)?.points,
                                 face.getContour(FaceContour.LOWER_LIP_TOP)?.points,

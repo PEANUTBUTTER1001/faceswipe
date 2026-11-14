@@ -6,7 +6,7 @@ on:
 
 jobs:
   release:
-    name: Build Release AAB
+    name: Build Signed Release AAB
     runs-on: ubuntu-latest
 
     steps:
@@ -25,8 +25,31 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      # 업로드 키는 저장소에 두지 않는다. Secrets에서 복원하고, 없으면 서명 없는 AAB를 만들지 않도록 실패시킨다.
+      - name: Restore Upload Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::error::서명 Secrets(KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD)가 설정되지 않았습니다."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload.keystore"
+          echo "FACESWIPE_KEYSTORE_FILE=$RUNNER_TEMP/upload.keystore" >> "$GITHUB_ENV"
+
       - name: Build Release AAB
+        env:
+          FACESWIPE_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          FACESWIPE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          FACESWIPE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew bundleRelease --stacktrace
+
+      - name: Remove Keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.keystore"
 
       - name: Upload Release AAB
         uses: actions/upload-artifact@v4

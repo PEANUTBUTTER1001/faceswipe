@@ -12,6 +12,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -43,15 +44,21 @@ class SettingsViewModel @Inject constructor(
      * flatMapLatest: selectedApp이 바뀌면 이전 Flow 구독을 취소하고
      * 새 앱의 매핑 Flow를 구독한다.
      */
-    val uiState: StateFlow<SettingsUiState> = _selectedApp
-        .flatMapLatest { app ->
-            getGestureMapping(app).map { mappings ->
-                SettingsUiState.Success(
-                    selectedApp = app,
-                    mappings = mappings,
-                )
-            }
-        }
+    /** 마지막 전체 해제 직전 매핑 (실행 취소용). 스낵바가 닫히면 비운다. */
+    private val lastReset = MutableStateFlow<ResetSnapshot?>(null)
+
+    val uiState: StateFlow<SettingsUiState> = combine(
+        _selectedApp.flatMapLatest { app ->
+            getGestureMapping(app).map { mappings -> app to mappings }
+        },
+        lastReset,
+    ) { (app, mappings), reset ->
+        SettingsUiState.Success(
+            selectedApp = app,
+            mappings = mappings,
+            pendingUndoApp = reset?.app,
+        ) as SettingsUiState
+    }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -83,8 +90,30 @@ class SettingsViewModel @Inject constructor(
      * 현재 선택된 앱의 모든 매핑을 초기화한다.
      */
     fun resetCurrentApp() {
+        val current = uiState.value as? SettingsUiState.Success ?: return
+        // 해제 직전 매핑을 보관해 두고, 스낵바의 "실행 취소"로 한 번에 복원한다.
+        lastReset.value = ResetSnapshot(current.selectedApp, current.mappings)
         viewModelScope.launch {
-            updateGestureMapping.reset(_selectedApp.value)
+            updateGestureMapping.reset(current.selectedApp)
         }
     }
+
+    /** 전체 해제 실행 취소: 보관한 매핑을 단일 트랜잭션으로 복원 */
+    fun undoReset() {
+        val snapshot = lastReset.value ?: return
+        lastReset.value = null
+        viewModelScope.launch {
+            updateGestureMapping.restore(snapshot.app, snapshot.mappings)
+        }
+    }
+
+    /** 실행 취소 스낵바가 시간 초과·닫힘으로 사라짐 → 복원 불가 */
+    fun onUndoDismissed() {
+        lastReset.value = null
+    }
+
+    private data class ResetSnapshot(
+        val app: TargetApp,
+        val mappings: Map<GestureTrigger, GestureAction?>,
+    )
 }
